@@ -124,7 +124,21 @@ Spotless enforces formatting: **Palantir Java Format** (4-space, 120-col), sorte
 ./mvnw spotless:check    # verify only — exit !=0 if drift (CI gate)
 ```
 
-`./mvnw validate` runs `spotless:check` automatically; CI will fail on unformatted code. Pre-commit hook (planned, LDG-20) will run `spotless:apply` on staged files.
+`./mvnw validate` runs `spotless:check` automatically; CI will fail on unformatted code.
+
+### Pre-commit hooks
+
+Lefthook runs Spotless auto-format and validates commit messages against [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/). Install once after clone:
+
+```bash
+brew install lefthook    # macOS — or download from https://lefthook.dev
+lefthook install         # wire up .git/hooks → lefthook.yml
+```
+
+- `pre-commit`: `./mvnw spotless:apply` → re-stage → `./mvnw spotless:check`. Rejects commit if any drift remains.
+- `commit-msg`: subject line must match `<type>(<scope>): <description>` (11 types, kebab-case scope). See `lefthook.yml` for the exact regex and [CONTRIBUTING.md](CONTRIBUTING.md#commit-format) for spec.
+
+To bypass in emergencies: `git commit --no-verify` (skip both hooks). Use sparingly; CI still enforces format.
 
 ## Contributing
 

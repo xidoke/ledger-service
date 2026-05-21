@@ -1,0 +1,37 @@
+# Lefthook — Git hooks manager
+# https://lefthook.dev
+#
+# Run `lefthook install` after clone to activate hooks.
+# Pre-commit: auto-format via Spotless then verify (idempotent safety check).
+# Commit-msg: enforce Conventional Commits 1.0 on subject line.
+
+pre-commit:
+  commands:
+    spotless:
+      run: ./mvnw spotless:apply -q && git add -u && ./mvnw spotless:check -q
+      fail_text: "Spotless format failed. Run './mvnw spotless:apply' manually and retry."
+
+commit-msg:
+  commands:
+    conventional:
+      skip:
+        - merge
+        - rebase
+      run: |
+        msg=$(head -n1 {1})
+        echo "$msg" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z][a-z0-9-]*\))?!?: .+" || {
+          echo ""
+          echo "ERROR: Commit subject must follow Conventional Commits 1.0"
+          echo ""
+          echo "Format: <type>(<scope>): <description>"
+          echo "Types: feat | fix | docs | refactor | test | perf | build | ci | chore | style | revert"
+          echo "Scope: lowercase kebab-case (e.g., account, infra, common)"
+          echo ""
+          echo "Examples:"
+          echo "  feat(account): add balance endpoint"
+          echo "  chore(infra): bump spring boot to 3.5.15"
+          echo "  fix(transfer)!: reject zero-amount transfers"
+          echo ""
+          echo "See CONTRIBUTING.md for full spec."
+          exit 1
+        }
