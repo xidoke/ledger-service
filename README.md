@@ -14,13 +14,13 @@ Design choice: **modular monolith + double-entry on relational DB**, *not* full 
 
 ## Stack
 
-| | |
-|---|---|
-| Language | Java 21 (LTS) |
-| Framework | Spring Boot 3.5 |
-| Build | Maven (use the wrapper `./mvnw`, not a local Maven) |
-| Database | PostgreSQL 17, schema via Flyway |
-| Tests | JUnit 5, AssertJ, Testcontainers (Postgres) |
+|             |                                                      |
+|-------------|------------------------------------------------------|
+| Language    | Java 21 (LTS)                                        |
+| Framework   | Spring Boot 3.5                                      |
+| Build       | Maven (use the wrapper `./mvnw`, not a local Maven)  |
+| Database    | PostgreSQL 17, schema via Flyway                     |
+| Tests       | JUnit 5, AssertJ, Testcontainers (Postgres)          |
 | Local infra | Docker Compose (Spring Boot starts it automatically) |
 
 Package layout follows **package-by-feature**: `account/`, `transfer/`, `topup/`, `ledger/`, `idempotency/`, `outbox/`, `common/`. Feature packages are scaffolded empty in Phase 0; domain code lands in Phase 1.
@@ -115,11 +115,22 @@ The following docs land during Phase 0 — links are forward references:
 - `docs/adr/` — Architecture Decision Records (ADR-001..007 in Phase 0, ADR-008+ in Phase 1).
 - `docs/onboarding/` — first-day setup beyond the Quickstart (IDE config, debug tips, common pitfalls).
 
+## Code style
+
+Spotless enforces formatting: **Palantir Java Format** (4-space, 120-col), sorted `pom.xml`, and Markdown via Flexmark.
+
+```bash
+./mvnw spotless:apply    # auto-format Java + pom + Markdown
+./mvnw spotless:check    # verify only — exit !=0 if drift (CI gate)
+```
+
+`./mvnw validate` runs `spotless:check` automatically; CI will fail on unformatted code. Pre-commit hook (planned, LDG-20) will run `spotless:apply` on staged files.
+
 ## Contributing
 
-Solo learning project for now — external PRs not accepted at this stage. A `CONTRIBUTING.md` will be added when the project reaches a stable shape.
+Solo learning project for now — external PRs not accepted at this stage. Conventions (branch naming, commit format, PR process, code style, testing expectations) are documented in [CONTRIBUTING.md](CONTRIBUTING.md) and designed to be team-portable.
 
-Commit convention: [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/).
+Commit convention: [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/) with `Refs LDG-N` / `Closes LDG-N` footer for Linear integration.
 
 ## License
 
