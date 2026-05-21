@@ -2,6 +2,8 @@
 
 > Mini e-wallet / double-entry ledger service in Java 21 + Spring Boot 3.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **Status:** Phase 0 — setup & skeleton. API not yet implemented.
 
 ## What it does
@@ -121,4 +123,4 @@ Commit convention: [Conventional Commits 1.0](https://www.conventionalcommits.or
 
 ## License
 
-Will be added in Phase 0 (planned: MIT).
+MIT — see [LICENSE](LICENSE). Copyright (c) 2026 xidoke.
