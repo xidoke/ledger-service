@@ -21,7 +21,7 @@ Design choice: **modular monolith + double-entry on relational DB**, *not* full 
 | Tests | JUnit 5, AssertJ, Testcontainers (Postgres) |
 | Local infra | Docker Compose (Spring Boot starts it automatically) |
 
-Package layout follows **package-by-feature**: `account/`, `transfer/`, `topup/`, `ledger/`, `idempotency/`, `outbox/`, `common/` (created in Phase 1).
+Package layout follows **package-by-feature**: `account/`, `transfer/`, `topup/`, `ledger/`, `idempotency/`, `outbox/`, `common/`. Feature packages are scaffolded empty in Phase 0; domain code lands in Phase 1.
 
 ## Prerequisites
 
@@ -41,17 +41,28 @@ docker info > /dev/null
 # Run the app. Spring Boot auto-starts the Postgres container declared in compose.yaml.
 ./mvnw spring-boot:run
 
-# In another shell:
-curl http://localhost:8080/actuator/health
-# → {"status":"UP"}
+# In another shell — proof of life:
+curl http://localhost:8080/hello
+# → {"message":"ledger-service up"}
 ```
 
 First run downloads Maven dependencies and pulls `postgres:17` (~5 min). Subsequent runs are ~10 s.
+
+See [Basic usage](#basic-usage) below for the rest of the Phase 0 endpoints.
 
 **Alternative — ephemeral mode** (uses Testcontainers; database resets every restart):
 
 ```bash
 ./mvnw spring-boot:test-run
+```
+
+## Basic usage
+
+Phase 0 exposes only the skeleton endpoints — domain endpoints (`/accounts`, `/transfers`, `/topups`) land in Phase 1.
+
+```http
+GET /hello             → 200 {"message":"ledger-service up"}
+GET /actuator/health   → 200 {"status":"UP"}
 ```
 
 ## Repository layout
@@ -62,8 +73,17 @@ ledger-service/
 ├── pom.xml                            # Maven build + dependencies
 ├── mvnw, mvnw.cmd                     # Maven wrapper (always use these)
 ├── .mvn/wrapper/                      # Wrapper config
-├── src/main/java/com/xidoke/ledger/   # Application code (package-by-feature, coming Phase 1)
-│   └── LedgerServiceApplication.java  # Spring Boot main class
+├── src/main/java/com/xidoke/ledger/   # Application code (package-by-feature)
+│   ├── LedgerServiceApplication.java  # Spring Boot main class
+│   ├── account/        # (empty in Phase 0)
+│   ├── transfer/       # (empty in Phase 0)
+│   ├── topup/          # (empty in Phase 0)
+│   ├── ledger/         # (empty in Phase 0)
+│   ├── idempotency/    # (empty in Phase 0)
+│   ├── outbox/         # (empty in Phase 0)
+│   └── common/
+│       ├── security/   # SecurityConfig — permit-all skeleton, real auth deferred to Phase 3+
+│       └── web/        # HelloController — health-style smoke endpoint
 ├── src/main/resources/
 │   ├── application.yml                # Config
 │   └── db/migration/                  # Flyway SQL migrations (`V<n>__description.sql`)
@@ -84,6 +104,14 @@ The project advances through deliberate phases, each with explicit exit criteria
 - **Phase 2+** — Two-service split via outbox boundary, saga for cross-service flows, Kafka, observability stack, scale work.
 
 Detailed phase plans and architectural decision records are tracked in a personal knowledge base and will migrate into this repo under `docs/` during Phase 0.
+
+## Further reading
+
+The following docs land during Phase 0 — links are forward references:
+
+- `ARCHITECTURE.md` — where to make a change (module map, key invariants). See [architecture-md-pattern](https://matklad.github.io/2021/02/06/ARCHITECTURE.md.html).
+- `docs/adr/` — Architecture Decision Records (ADR-001..007 in Phase 0, ADR-008+ in Phase 1).
+- `docs/onboarding/` — first-day setup beyond the Quickstart (IDE config, debug tips, common pitfalls).
 
 ## Contributing
 
