@@ -57,19 +57,19 @@ Refs LDG-N
 
 **Type** (commit-msg hook enforces):
 
-| Type | When to use | SemVer |
-|---|---|---|
-| `feat` | User-visible new behavior (endpoint, domain capability) | MINOR |
-| `fix` | Production bug fix | PATCH |
-| `docs` | Docs only (README, ADR, comments) | — |
-| `refactor` | Code restructure, no behavior change | — |
-| `test` | Add/fix tests | — |
-| `perf` | Performance improvement | PATCH (optional) |
-| `build` | Build system, deps, tooling | — |
-| `ci` | CI/CD configuration | — |
-| `chore` | Bootstrap, scaffolding, deps update | — |
-| `style` | Whitespace, format | — |
-| `revert` | Revert previous commit | depends |
+|    Type    |                       When to use                       |      SemVer      |
+|------------|---------------------------------------------------------|------------------|
+| `feat`     | User-visible new behavior (endpoint, domain capability) | MINOR            |
+| `fix`      | Production bug fix                                      | PATCH            |
+| `docs`     | Docs only (README, ADR, comments)                       | —                |
+| `refactor` | Code restructure, no behavior change                    | —                |
+| `test`     | Add/fix tests                                           | —                |
+| `perf`     | Performance improvement                                 | PATCH (optional) |
+| `build`    | Build system, deps, tooling                             | —                |
+| `ci`       | CI/CD configuration                                     | —                |
+| `chore`    | Bootstrap, scaffolding, deps update                     | —                |
+| `style`    | Whitespace, format                                      | —                |
+| `revert`   | Revert previous commit                                  | depends          |
 
 **Scope** (optional, matches package or area):
 
