@@ -36,4 +36,5 @@ indent_style = tab
 
 # Markdown uses 2 trailing spaces for line break
 [*.md]
+indent_size = 2
 trim_trailing_whitespace = false
