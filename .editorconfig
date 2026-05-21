@@ -1,0 +1,39 @@
+# .editorconfig — https://editorconfig.org
+# Supported natively by IntelliJ, VS Code, Eclipse, Vim, Emacs (no plugin needed in modern IDEs).
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.java]
+indent_size = 4
+
+[*.{xml,pom}]
+indent_size = 4
+
+[*.{yml,yaml}]
+indent_size = 2
+
+[*.{json,ts,js,html,css}]
+indent_size = 2
+
+[*.properties]
+indent_size = 4
+
+[*.sql]
+indent_size = 2
+
+[*.sh]
+indent_size = 2
+
+[Makefile]
+indent_style = tab
+
+# Markdown uses 2 trailing spaces for line break
+[*.md]
+trim_trailing_whitespace = false
