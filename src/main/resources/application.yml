@@ -2,6 +2,10 @@ spring:
   application:
     name: ledger-service
 
+  mvc:
+    problemdetails:
+      enabled: true # framework MVC exceptions render as RFC 7807 ProblemDetail
+
   # Datasource is env-var driven (no hardcoded credentials).
   # Local dev: Spring Boot's docker-compose support supplies connection
   # details from compose.yaml. Tests: Testcontainers @ServiceConnection.
