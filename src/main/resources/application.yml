@@ -1,3 +1,22 @@
 spring:
   application:
     name: ledger-service
+
+  # Datasource is env-var driven (no hardcoded credentials).
+  # Local dev: Spring Boot's docker-compose support supplies connection
+  # details from compose.yaml. Tests: Testcontainers @ServiceConnection.
+  # Other envs: set SPRING_DATASOURCE_* (e.g. in prod/staging).
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:}
+    username: ${SPRING_DATASOURCE_USERNAME:}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+
+  jpa:
+    # Flyway owns the schema; Hibernate must never auto-generate DDL.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration

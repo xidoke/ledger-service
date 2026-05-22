@@ -1,0 +1,5 @@
+-- V1: baseline migration (placeholder).
+--
+-- Establishes the Flyway schema history table on a fresh database. No domain
+-- tables yet — accounts, ledger_entries, outbox, and idempotency_keys land in
+-- Phase 1 as their own versioned migrations (V2+).
