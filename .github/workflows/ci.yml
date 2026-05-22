@@ -42,3 +42,13 @@ jobs:
           name: jacoco-report
           path: target/site/jacoco/
           if-no-files-found: error
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: xidoke/ledger-service
+          files: target/site/jacoco/jacoco.xml
+          # Don't fail the build (and block merges) on a Codecov hiccup.
+          fail_ci_if_error: false
