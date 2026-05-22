@@ -2,6 +2,7 @@ package com.xidoke.ledger.account.adapter.out;
 
 import com.xidoke.ledger.account.domain.Account;
 import com.xidoke.ledger.account.domain.AccountStatus;
+import com.xidoke.ledger.account.domain.AccountType;
 import com.xidoke.ledger.common.domain.AccountId;
 import com.xidoke.ledger.common.domain.Money;
 
@@ -16,6 +17,7 @@ final class AccountJpaMapper {
                 account.ownerRef(),
                 account.currencyCode(),
                 account.status().name(),
+                account.type().name(),
                 account.balance().minorUnits(),
                 account.version());
     }
@@ -25,6 +27,7 @@ final class AccountJpaMapper {
                 AccountId.of(entity.getId()),
                 entity.getOwnerRef(),
                 entity.getCurrency(),
+                AccountType.valueOf(entity.getAccountType()),
                 AccountStatus.valueOf(entity.getStatus()),
                 Money.of(entity.getBalance(), entity.getCurrency()),
                 entity.getVersion());

@@ -36,6 +36,9 @@ public class AccountJpaEntity {
     @Column(nullable = false)
     private String status;
 
+    @Column(name = "account_type", nullable = false)
+    private String accountType;
+
     @Column(nullable = false)
     private long balance;
 
@@ -48,11 +51,18 @@ public class AccountJpaEntity {
     }
 
     public AccountJpaEntity(
-            UUID id, @Nullable String ownerRef, String currency, String status, long balance, long version) {
+            UUID id,
+            @Nullable String ownerRef,
+            String currency,
+            String status,
+            String accountType,
+            long balance,
+            long version) {
         this.id = id;
         this.ownerRef = ownerRef;
         this.currency = currency;
         this.status = status;
+        this.accountType = accountType;
         this.balance = balance;
         this.version = version;
     }
@@ -71,6 +81,10 @@ public class AccountJpaEntity {
 
     public String getStatus() {
         return status;
+    }
+
+    public String getAccountType() {
+        return accountType;
     }
 
     public long getBalance() {

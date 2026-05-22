@@ -63,8 +63,8 @@ class AccountTest {
 
     @Test
     void nonActiveAccountRejectsMovements() {
-        Account frozen =
-                new Account(AccountId.newId(), "owner-1", "USD", AccountStatus.FROZEN, Money.of(100, "USD"), 0L);
+        Account frozen = new Account(
+                AccountId.newId(), "owner-1", "USD", AccountType.USER, AccountStatus.FROZEN, Money.of(100, "USD"), 0L);
 
         assertThatExceptionOfType(AccountNotActiveException.class)
                 .isThrownBy(() -> frozen.debit(Money.of(10, "USD"), TX, AT));
@@ -85,7 +85,24 @@ class AccountTest {
     @Test
     void balanceCurrencyMustMatchAccountCurrency() {
         assertThatThrownBy(() -> new Account(
-                        AccountId.newId(), "owner-1", "USD", AccountStatus.ACTIVE, Money.of(100, "VND"), 0L))
+                        AccountId.newId(),
+                        "owner-1",
+                        "USD",
+                        AccountType.USER,
+                        AccountStatus.ACTIVE,
+                        Money.of(100, "VND"),
+                        0L))
                 .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    void systemAccountMayGoNegativeOnDebit() {
+        Account systemFunding = Account.openSystem(AccountId.newId(), "USD");
+
+        LedgerEntry entry = systemFunding.debit(Money.of(500, "USD"), TX, AT);
+
+        assertThat(entry.direction()).isEqualTo(Direction.DEBIT);
+        assertThat(systemFunding.balance()).isEqualTo(Money.of(-500, "USD"));
+        assertThat(systemFunding.type()).isEqualTo(AccountType.SYSTEM);
     }
 }
