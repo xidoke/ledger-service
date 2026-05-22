@@ -1,4 +1,4 @@
-package com.xidoke.ledger.ledger;
+package com.xidoke.ledger.ledger.domain;
 
 /**
  * Persists a posted {@link Transaction} — its header plus all its (append-only) ledger entries — as one unit. The

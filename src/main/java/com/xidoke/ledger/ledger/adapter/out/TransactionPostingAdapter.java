@@ -1,6 +1,8 @@
-package com.xidoke.ledger.ledger;
+package com.xidoke.ledger.ledger.adapter.out;
 
 import com.xidoke.ledger.common.domain.LedgerEntry;
+import com.xidoke.ledger.ledger.domain.Transaction;
+import com.xidoke.ledger.ledger.domain.TransactionRepository;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
