@@ -132,14 +132,14 @@ The project advances through deliberate phases, each with explicit exit criteria
 - **Phase 1 (~8 weeks)** — Core ledger (level 0–1): double-entry entries, idempotency keys, optimistic locking with retry, transactional outbox, reconciliation job. Release **v0.1** deployed.
 - **Phase 2+** — Two-service split via outbox boundary, saga for cross-service flows, Kafka, observability stack, scale work.
 
-Architecture decision records live in [docs/adr/](docs/adr/) (0001–0007); the country-map overview is in [ARCHITECTURE.md](ARCHITECTURE.md). Detailed phase plans are tracked separately and surface under `docs/` as they solidify.
+Architecture decision records live in [docs/adr/](docs/adr/) (see the catalog there; Phase 1 ADRs land as decisions land); the country-map overview is in [ARCHITECTURE.md](ARCHITECTURE.md). Detailed phase plans are tracked separately and surface under `docs/` as they solidify.
 
 ## Further reading
 
 A layered skim path — start at the top, go deeper as the need arises:
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — where to make a change: module map, invariants, data flow.
-- [docs/adr/](docs/adr/) — Architecture Decision Records (0001–0007; 0008+ land in Phase 1).
+- [docs/adr/](docs/adr/) — Architecture Decision Records (MADR; see the catalog — Phase 1 ADRs land as decisions land).
 - [docs/glossary.md](docs/glossary.md) — domain vocabulary: the ubiquitous language and canonical term names.
 - [docs/onboarding/](docs/onboarding/) — first-day setup beyond the Quickstart (scaffold; fills in Phase 1).
 - [CHANGELOG.md](CHANGELOG.md) — notable changes per version (Keep a Changelog).
