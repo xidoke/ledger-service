@@ -4,7 +4,7 @@ HELP.md
 ### Build output ###
 target/
 build/
-out/
+/out/
 bin/
 !**/src/main/**/target/
 !**/src/test/**/target/
