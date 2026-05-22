@@ -1,0 +1,41 @@
+name: Feature Request
+description: Propose a new capability or improvement
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe **why** you need this, not just what. Problem-first requests get prioritized faster.
+        Internal project tasks are tracked in Linear, not here.
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: What problem are you trying to solve? What workflow is blocked or painful?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: The change you have in mind — API shape, behavior, config. Be specific.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Estimated scope
+      options:
+        - Small — config or single endpoint
+        - Medium — new domain logic or several endpoints
+        - Large — new subsystem or cross-cutting concern
+        - Unknown
+    validations:
+      required: true
