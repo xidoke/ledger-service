@@ -1,0 +1,20 @@
+# CODEOWNERS — maps repo paths to required reviewers. GitHub auto-requests
+# review from the matching owner(s) when a PR touches those paths.
+#
+# Rule: LAST matching pattern wins (opposite of .gitignore's first-match).
+# Order general -> specific so a specific rule below overrides the default.
+#
+# Solo-maintained today (@xidoke); written team-portable — swap @xidoke for
+# @org/team-name without restructuring when the team grows.
+
+# Default: everything needs the repo owner's review.
+*                   @xidoke
+
+# Docs: explicit ownership signals review intent + enables future delegation.
+/docs/              @xidoke
+
+# ADRs: architectural decisions warrant conscious sign-off.
+/docs/adr/          @xidoke
+
+# Guard this file itself — whoever can rewrite it can reroute all reviews.
+/.github/CODEOWNERS @xidoke
