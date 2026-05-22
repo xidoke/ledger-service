@@ -13,6 +13,7 @@ section to the new version + date and start a fresh `[Unreleased]`.
 ### Added
 
 - Core domain model (Phase 1): `Account` aggregate (balance cache, status, `debit`/`credit` enforcing ACTIVE + no-overdraw), `Transaction` aggregate (double-entry `Σ debit == Σ credit` posting), immutable `LedgerEntry` fact, and a shared domain kernel (`Money`, `AccountId`, `TransactionId`, `Direction`) under `common/domain`. ADR-0010 (Account-per-aggregate).
+- Flyway migrations V2–V4 for the domain schema: `accounts` (UUID PK, BIGINT `balance`, optimistic-lock `version`, `updated_at` trigger), `transactions`, and append-only `ledger_entries` (DB trigger rejecting UPDATE/DELETE, `amount > 0` check, `(account_id, created_at)` index). Money columns are BIGINT minor units (ADR-0007); enum-like columns use VARCHAR + CHECK.
 
 ### Changed
 
