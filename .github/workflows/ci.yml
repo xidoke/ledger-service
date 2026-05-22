@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build, test & lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Lint (Spotless)
+        run: ./mvnw -B spotless:check --no-transfer-progress
+
+      - name: Build & test
+        # verify = compile + Surefire tests; the skeleton test is a Testcontainers
+        # @SpringBootTest, so Docker (pre-installed on ubuntu-latest) is required.
+        # Spotless already ran above, so skip its validate-phase re-check here.
+        run: ./mvnw -B verify -Dspotless.check.skip=true --no-transfer-progress
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: "true"
