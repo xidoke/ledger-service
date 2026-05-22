@@ -1,4 +1,4 @@
-package com.xidoke.ledger.ledger;
+package com.xidoke.ledger.ledger.domain;
 
 import com.xidoke.ledger.common.domain.Direction;
 import com.xidoke.ledger.common.domain.LedgerEntry;

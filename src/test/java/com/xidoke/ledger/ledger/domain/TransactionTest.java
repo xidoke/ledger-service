@@ -1,4 +1,4 @@
-package com.xidoke.ledger.ledger;
+package com.xidoke.ledger.ledger.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
