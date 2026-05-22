@@ -143,6 +143,17 @@ Spotless enforces formatting: **Palantir Java Format** (4-space, 120-col), sorte
 
 `./mvnw validate` runs `spotless:check` automatically; CI will fail on unformatted code.
 
+### Coverage
+
+JaCoCo runs during `verify` and **fails the build below 70% instruction coverage**.
+
+```bash
+./mvnw verify                        # runs tests + the coverage gate
+open target/site/jacoco/index.html   # browse the HTML report (use `xdg-open` on Linux)
+```
+
+CI uploads the same report as the `jacoco-report` artifact on every run.
+
 ### Pre-commit hooks
 
 Lefthook runs Spotless auto-format and validates commit messages against [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/). Install once after clone:
