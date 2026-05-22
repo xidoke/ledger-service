@@ -26,6 +26,8 @@ section to the new version + date and start a fresh `[Unreleased]`.
 
 ### Security
 
+- Validate the inbound `X-Correlation-Id` against an allowlist (`[A-Za-z0-9_-]{1,64}`) before reflecting it into the response header / MDC — closes an HTTP response-splitting / log-injection vector in `CorrelationIdFilter`.
+
 ## [0.0.0] - 2026-05-22
 
 Phase 0 — foundations & skeleton (no domain endpoints yet).
