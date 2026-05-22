@@ -16,14 +16,14 @@ Design choice: **modular monolith + double-entry on relational DB**, *not* full 
 
 ## Stack
 
-|             |                                                      |
-|-------------|------------------------------------------------------|
-| Language    | Java 21 (LTS)                                        |
-| Framework   | Spring Boot 3.5                                      |
-| Build       | Maven (use the wrapper `./mvnw`, not a local Maven)  |
-| Database    | PostgreSQL 17, schema via Flyway                     |
-| Tests       | JUnit 5, AssertJ, Testcontainers (Postgres)          |
-| Local infra | Docker Compose (Spring Boot starts it automatically) |
+|             |                                                                     |
+|-------------|---------------------------------------------------------------------|
+| Language    | Java 21 (LTS)                                                       |
+| Framework   | Spring Boot 3.5                                                     |
+| Build       | Maven (use the wrapper `./mvnw`, not a local Maven)                 |
+| Database    | PostgreSQL 17, schema via Flyway                                    |
+| Tests       | JUnit 5, AssertJ, Testcontainers (Postgres), jqwik (property-based) |
+| Local infra | Docker Compose (Spring Boot starts it automatically)                |
 
 Package layout follows **package-by-feature**: `account/`, `transfer/`, `topup/`, `ledger/`, `idempotency/`, `outbox/`, `common/`. Domain modelling has begun — `account/` (the `Account` aggregate), `ledger/` (the `Transaction` posting aggregate), and a shared domain kernel in `common/domain/` are populated; the remaining feature packages fill in as Phase 1 progresses.
 
@@ -116,8 +116,8 @@ ledger-service/
 ├── src/main/java/com/xidoke/ledger/   # Application code (package-by-feature)
 │   ├── LedgerServiceApplication.java  # Spring Boot main class
 │   ├── account/        # Account aggregate root (balance cache, status, debit/credit)
-│   ├── transfer/       # (empty — Phase 1)
-│   ├── topup/          # (empty — Phase 1)
+│   ├── transfer/       # Transfer use case (POST /transfers — balanced DEBIT/CREDIT)
+│   ├── topup/          # Top-up use case (POST /accounts/{id}/topups)
 │   ├── ledger/         # Transaction aggregate (double-entry posting, Σ debit == Σ credit)
 │   ├── idempotency/    # (empty — Phase 1)
 │   ├── outbox/         # (empty — Phase 1)

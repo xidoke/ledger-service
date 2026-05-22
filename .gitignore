@@ -1,6 +1,10 @@
 # Initializr default
 HELP.md
 
+### Test artifacts ###
+# jqwik writes failing-sample data here for the SAMPLE_FIRST re-run mode; local-only, never committed.
+.jqwik-database
+
 ### Build output ###
 target/
 build/
