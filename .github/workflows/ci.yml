@@ -34,3 +34,11 @@ jobs:
         run: ./mvnw -B verify -Dspotless.check.skip=true --no-transfer-progress
         env:
           TESTCONTAINERS_RYUK_DISABLED: "true"
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+          if-no-files-found: error
