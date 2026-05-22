@@ -15,8 +15,11 @@ Captures architectural decisions — **what** was decided, **when**, and **why**
 | [0005](0005-ledger-model.md)           | Double-entry, append-only ledger entries                                               | Accepted |
 | [0006](0006-balance-representation.md) | Balance cached in the same DB transaction as ledger entries                            | Accepted |
 | [0007](0007-money-representation.md)   | BIGINT integer minor units                                                             | Accepted |
+| [0010](0010-aggregate-boundary.md)     | Account-per-aggregate (Account is the locking boundary)                                | Accepted |
 
 Phase 1 ADRs (0008-0017) land as decisions land — currency scope, system funding account, aggregate boundary, concurrency strategy, idempotency, event publishing (outbox), PII handling, event schema versioning, reconciliation, observability.
+
+> **Numbering note**: ADR numbers track the vault decision log (`Research/ledger-system-ADR/wiki/adr-NNN-*`), not repo creation order, so each repo ADR keeps the same number as its source analysis. A decision is distilled here when its code lands — hence numbers may be non-contiguous (e.g. 0008 currency-scope and 0009 system-funding-account are still pending while 0010 is distilled). Numbers are never reused.
 
 ## Convention
 

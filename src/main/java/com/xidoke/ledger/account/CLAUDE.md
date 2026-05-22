@@ -1,5 +1,5 @@
 # account package — CLAUDE.md
 
-Placeholder for Phase 1. Will document the Account aggregate (entity, repository, service), balance update rules, and optimistic locking pattern (ADR-006, ADR-010, ADR-011).
+Owns the `Account` aggregate root and locking boundary (ADR-0010): cached `balance` + `version`, `status`, and the `debit`/`credit` domain methods that enforce the per-account invariants (account ACTIVE; no overdraw). Repository, service, and the optimistic-locking persistence wiring (ADR-0006, ADR-0011) land in later issues.
 
 See repository root `CLAUDE.md` for project-wide conventions.
