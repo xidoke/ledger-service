@@ -27,7 +27,9 @@ Accepted (2026-05-20). Ported tới repo 2026-05-23 từ vault source `Research/
 
 Một account đặc biệt đại diện nguồn vốn ngoài. Top-up tạo cặp: `DEBIT SYSTEM_FUNDING / CREDIT user_account`. `SYSTEM_FUNDING` là **debit-normal**; balance âm là *bình thường + có ý nghĩa* — nó đo tổng nghĩa vụ của platform với users: `balance(SYSTEM_FUNDING) + Σ balance(user_accounts) == 0` (khi chưa có withdrawal).
 
-Trong schema hiện tại ([ADR-0010](0010-aggregate-boundary.md) + migration accounts): `SYSTEM_FUNDING` là một row trong `accounts` với **id well-known** và **`owner_ref = NULL`** (không có cột `account_type` riêng — system account nhận diện qua reserved id / null owner). Seed bằng migration khi top-up land.
+Trong schema hiện tại ([ADR-0010](0010-aggregate-boundary.md) + migration accounts): `SYSTEM_FUNDING` là một row trong `accounts` với **id well-known** và **`owner_ref = NULL`**, seed bằng migration (V5).
+
+> **Amendment (2026-05-23, LDG-44):** thêm cột **`account_type`** (`USER`/`SYSTEM`) + enum `AccountType` trên `Account` aggregate. SYSTEM_FUNDING có `account_type = SYSTEM` và `Account.debit()` cho phép số dư âm khi type là SYSTEM (USER thì cấm overdraw). Điều này **thay** ý ban đầu "nhận diện chỉ bằng id + null owner, không thêm cột type": balance policy là hành vi domain nên gắn vào type tường minh (lý do đầy đủ: vault `ledger-systems/wiki/account-types-and-negative-balance`).
 
 **Pros:** invariant giữ nguyên, trial balance pass; `|balance(SYSTEM_FUNDING)|` = tổng outstanding user balance → check reconciliation tự nhiên; Phase 2 chỉ cần thêm external payment reference, không đổi model; chuẩn ngành (Stripe/Modern Treasury có "platform settlement account").
 **Cons:** phải document rõ "balance âm là bình thường" kẻo bị tưởng bug.

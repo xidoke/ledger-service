@@ -17,6 +17,7 @@ section to the new version + date and start a fresh `[Unreleased]`.
 - `MoneyFormatter` — currency-aware display formatting (minor → major via ISO 4217 fraction digits), centralizing the `/100` conversion so it never scatters (ADR-0007).
 - Account persistence foundation (hexagonal, ADR-0018): `account/` split into `domain/` (pure `Account` aggregate + `AccountRepository` port) and `adapter/out/` (`AccountJpaEntity` + mapper + `AccountPersistenceAdapter` over Spring Data JPA, optimistic-lock `@Version`). ArchUnit now enforces that `..domain..` is free of JPA/Spring.
 - Account endpoints: `POST /accounts`, `GET /accounts/{id}`, `GET /accounts/{id}/entries` (entry history via a `JdbcClient` read query). Unknown id → RFC 7807 404; validation failures → 400 with `fieldErrors`. A shared `common/error/NotFoundException` maps to 404 centrally so domain exceptions stay framework-free.
+- Top-up use case: `POST /accounts/{id}/topups` posts a balanced `DEBIT SYSTEM_FUNDING / CREDIT user` pair in one `@Transactional` (balance cache + entries commit together, ADR-0006); transaction header + append-only entries via `JdbcClient`. Adds `AccountType` (USER/SYSTEM) + the `account_type` column (V5) so SYSTEM_FUNDING may hold a negative balance (ADR-0009), and seeds the SYSTEM_FUNDING account. ArchUnit now permits use-case features (topup/transfer) to depend on core features (account/ledger) per ADR-0019.
 
 ### Changed
 

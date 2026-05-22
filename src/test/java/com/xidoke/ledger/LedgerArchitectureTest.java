@@ -2,6 +2,7 @@ package com.xidoke.ledger;
 
 import static com.tngtech.archunit.base.DescribedPredicate.alwaysTrue;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
@@ -30,14 +31,21 @@ class LedgerArchitectureTest {
         "com.xidoke.ledger.outbox.."
     };
 
-    // Feature packages must not depend on each other; dependencies onto shared common are allowed.
+    // Feature packages are independent, with two allowed exceptions:
+    //   1. anyone may depend on shared `common`;
+    //   2. use-case features (transfer, topup) may depend on core aggregate features (account, ledger) — a use case
+    //      orchestrates aggregates via their public API (ADR-0019). The reverse (core → use case) stays forbidden,
+    //      and core features remain independent of each other (account ↮ ledger).
     @ArchTest
     static final ArchRule featurePackagesAreIndependent = slices().matching("com.xidoke.ledger.(*)..")
             .namingSlices("$1")
             .should()
             .notDependOnEachOther()
             .ignoreDependency(alwaysTrue(), resideInAPackage("..common.."))
-            .as("feature packages must not depend on each other (common is the only shared package)");
+            .ignoreDependency(
+                    resideInAnyPackage("com.xidoke.ledger.transfer..", "com.xidoke.ledger.topup.."),
+                    resideInAnyPackage("com.xidoke.ledger.account..", "com.xidoke.ledger.ledger.."))
+            .as("feature packages independent; use-case features may use core features + common (ADR-0019)");
 
     // common is shared infrastructure: it must never depend on a feature package.
     @ArchTest
