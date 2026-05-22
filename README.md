@@ -155,6 +155,23 @@ open target/site/jacoco/index.html   # browse the HTML report (use `xdg-open` on
 
 CI uploads the same report as the `jacoco-report` artifact on every run.
 
+### Static analysis
+
+`verify` also runs three analyzers. In Phase 0 they are **warnings only** — they do
+not fail the build yet (baseline first; treat-as-error comes in Phase 1).
+
+- **Error Prone** + **NullAway** — compile-time bug patterns + null-safety (`@NullMarked` project-wide).
+- **SpotBugs** — bytecode bug patterns (`effort=Max`).
+
+Suppress a confirmed false positive as narrowly as possible:
+
+```java
+@SuppressWarnings("NullAway")  // Error Prone / NullAway (also "EqualsHashCode", etc.)
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "why it's safe here")  // SpotBugs
+```
+
 ### Pre-commit hooks
 
 Lefthook runs Spotless auto-format and validates commit messages against [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/). Install once after clone:
