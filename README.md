@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/xidoke/ledger-service/graph/badge.svg)](https://codecov.io/gh/xidoke/ledger-service)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Status:** Phase 1 — core ledger in progress. First domain endpoints live (`/accounts`); transfers/top-ups next.
+**Status:** Phase 1 — core ledger in progress. Account, top-up, and transfer endpoints live; idempotency + concurrency next.
 
 ## What it does
 
@@ -77,14 +77,17 @@ work; this mode mirrors a deployed environment. Stop with
 
 ## Basic usage
 
-Account + top-up endpoints are live; `/transfers` lands later in Phase 1.
+Account, top-up, and transfer endpoints are live.
 
 ```http
 POST /accounts                 → 201 {id, ownerRef, currency, status, balanceMinorUnits}   body {ownerRef?, currency}
 GET  /accounts/{id}            → 200 (account detail incl. balanceMinorUnits)
 GET  /accounts/{id}/entries    → 200 (ledger-entry history, newest first)
 POST /accounts/{id}/topups     → 201 {transactionId, accountId, balanceMinorUnits, currency}   body {amountMinorUnits}
+POST /transfers                → 201 {transactionId, fromAccountId, fromBalanceMinorUnits, toAccountId, toBalanceMinorUnits, currency}   body {fromAccountId, toAccountId, amountMinorUnits}
 ```
+
+Insufficient funds, self-transfer, and currency mismatch return RFC 7807 `422`; unknown account → `404`; invalid body → `400`.
 
 Skeleton endpoints from Phase 0 remain:
 
