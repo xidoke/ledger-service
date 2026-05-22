@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Project backlog (Linear)
+    url: https://linear.app/xidoke-ledger
+    about: Feature work, internal tasks, and roadmap items are tracked in Linear — open them there, not here.
+  - name: Report a security vulnerability
+    url: https://github.com/xidoke/ledger-service/security/advisories/new
+    about: Report privately via GitHub Security Advisories. Do NOT open a public issue.

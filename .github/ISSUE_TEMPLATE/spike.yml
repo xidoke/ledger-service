@@ -1,0 +1,41 @@
+name: Spike / Research Question
+description: A time-boxed investigation with a clear question and a defined output
+title: "[Spike] "
+labels: ["spike"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A spike is a time-boxed investigation — it must produce a concrete output (findings comment or ADR), not open-ended exploration.
+  - type: textarea
+    id: question
+    attributes:
+      label: Research question
+      description: The single specific question this spike must answer.
+    validations:
+      required: true
+  - type: input
+    id: timebox
+    attributes:
+      label: Timebox
+      description: Maximum calendar time allocated.
+      placeholder: "2 days"
+    validations:
+      required: true
+  - type: dropdown
+    id: output
+    attributes:
+      label: Output format
+      options:
+        - Findings comment on this issue
+        - ADR in docs/adr/ (lasting architectural decision)
+        - Short doc in docs/
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done criteria
+      description: How will you know the spike is complete?
+    validations:
+      required: true
