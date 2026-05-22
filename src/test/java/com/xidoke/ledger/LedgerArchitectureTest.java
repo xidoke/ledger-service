@@ -4,6 +4,7 @@ import static com.tngtech.archunit.base.DescribedPredicate.alwaysTrue;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
@@ -84,5 +85,26 @@ class LedgerArchitectureTest {
             .dependOnClassesThat()
             .resideInAnyPackage("jakarta.persistence..", "org.springframework..")
             .as("domain packages must not depend on JPA or Spring (hexagonal — ADR-0018)")
+            .allowEmptyShould(true);
+
+    // Append-only (ADR-0005), code-layer guard. The DB trigger (V4) is the hard enforcement; these rules stop the
+    // code from drifting toward mutation: LedgerEntry must stay an immutable fact, and its query port must stay
+    // read-only (corrections are new reversing entries, never an UPDATE/DELETE).
+    @ArchTest
+    static final ArchRule ledgerEntriesAreImmutable = classes()
+            .that()
+            .haveSimpleName("LedgerEntry")
+            .should()
+            .haveOnlyFinalFields()
+            .as("LedgerEntry is an append-only immutable fact (ADR-0005)");
+
+    @ArchTest
+    static final ArchRule ledgerEntryQueryRepositoryIsReadOnly = methods()
+            .that()
+            .areDeclaredInClassesThat()
+            .haveSimpleName("LedgerEntryQueryRepository")
+            .should()
+            .haveNameNotMatching("(?i)(save|update|delete|insert|remove|merge).*")
+            .as("the LedgerEntry query port exposes no mutators — entries are append-only (ADR-0005)")
             .allowEmptyShould(true);
 }
