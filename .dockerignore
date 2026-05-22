@@ -1,0 +1,12 @@
+.git/
+.github/
+.idea/
+target/
+docs/
+*.md
+*.iml
+compose.yaml
+compose.app.yaml
+Dockerfile
+.dockerignore
+lefthook.yml
