@@ -87,6 +87,17 @@
 			<version>1.4.2</version>
 			<scope>test</scope>
 		</dependency>
+		<!--
+		  Property-based testing (LDG-47). Pinned to 1.9.2 on purpose: jqwik 1.9.3 requires JUnit Platform 1.13.1+,
+		  but Spring Boot 3.5 manages the platform at 1.12.x — 1.9.2 targets an older platform and runs fine on it.
+		  Revisit when the managed JUnit Platform reaches 1.13+.
+		-->
+		<dependency>
+			<groupId>net.jqwik</groupId>
+			<artifactId>jqwik</artifactId>
+			<version>1.9.2</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
