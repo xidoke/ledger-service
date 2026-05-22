@@ -19,8 +19,15 @@ import org.springframework.web.bind.annotation.RestController;
 @AnalyzeClasses(packages = "com.xidoke.ledger", importOptions = ImportOption.DoNotIncludeTests.class)
 class LedgerArchitectureTest {
 
+    // Fully qualified on purpose: the root package is com.xidoke.ledger, so a loose "..ledger.." would match
+    // every class in the project (the "ledger" segment appears in every package), not just the ledger feature.
     private static final String[] FEATURE_PACKAGES = {
-        "..account..", "..transfer..", "..topup..", "..ledger..", "..idempotency..", "..outbox.."
+        "com.xidoke.ledger.account..",
+        "com.xidoke.ledger.transfer..",
+        "com.xidoke.ledger.topup..",
+        "com.xidoke.ledger.ledger..",
+        "com.xidoke.ledger.idempotency..",
+        "com.xidoke.ledger.outbox.."
     };
 
     // Feature packages must not depend on each other; dependencies onto shared common are allowed.
@@ -50,13 +57,13 @@ class LedgerArchitectureTest {
             .areAnnotatedWith(RestController.class)
             .should()
             .resideInAnyPackage(
-                    "..account..",
-                    "..transfer..",
-                    "..topup..",
-                    "..ledger..",
-                    "..idempotency..",
-                    "..outbox..",
-                    "..common.web..")
+                    "com.xidoke.ledger.account..",
+                    "com.xidoke.ledger.transfer..",
+                    "com.xidoke.ledger.topup..",
+                    "com.xidoke.ledger.ledger..",
+                    "com.xidoke.ledger.idempotency..",
+                    "com.xidoke.ledger.outbox..",
+                    "com.xidoke.ledger.common.web..")
             .as("@RestController must reside in a feature package or common.web")
             .allowEmptyShould(true);
 }

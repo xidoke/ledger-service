@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/xidoke/ledger-service/graph/badge.svg)](https://codecov.io/gh/xidoke/ledger-service)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Status:** Phase 0 — setup & skeleton. API not yet implemented.
+**Status:** Phase 1 — core domain model in progress (Phase 0 skeleton complete). No HTTP API yet.
 
 ## What it does
 
@@ -25,7 +25,7 @@ Design choice: **modular monolith + double-entry on relational DB**, *not* full 
 | Tests       | JUnit 5, AssertJ, Testcontainers (Postgres)          |
 | Local infra | Docker Compose (Spring Boot starts it automatically) |
 
-Package layout follows **package-by-feature**: `account/`, `transfer/`, `topup/`, `ledger/`, `idempotency/`, `outbox/`, `common/`. Feature packages are scaffolded empty in Phase 0; domain code lands in Phase 1.
+Package layout follows **package-by-feature**: `account/`, `transfer/`, `topup/`, `ledger/`, `idempotency/`, `outbox/`, `common/`. Domain modelling has begun — `account/` (the `Account` aggregate), `ledger/` (the `Transaction` posting aggregate), and a shared domain kernel in `common/domain/` are populated; the remaining feature packages fill in as Phase 1 progresses.
 
 ## Prerequisites
 
@@ -103,13 +103,14 @@ ledger-service/
 ├── .mvn/wrapper/                      # Wrapper config
 ├── src/main/java/com/xidoke/ledger/   # Application code (package-by-feature)
 │   ├── LedgerServiceApplication.java  # Spring Boot main class
-│   ├── account/        # (empty in Phase 0)
-│   ├── transfer/       # (empty in Phase 0)
-│   ├── topup/          # (empty in Phase 0)
-│   ├── ledger/         # (empty in Phase 0)
-│   ├── idempotency/    # (empty in Phase 0)
-│   ├── outbox/         # (empty in Phase 0)
+│   ├── account/        # Account aggregate root (balance cache, status, debit/credit)
+│   ├── transfer/       # (empty — Phase 1)
+│   ├── topup/          # (empty — Phase 1)
+│   ├── ledger/         # Transaction aggregate (double-entry posting, Σ debit == Σ credit)
+│   ├── idempotency/    # (empty — Phase 1)
+│   ├── outbox/         # (empty — Phase 1)
 │   └── common/
+│       ├── domain/     # shared domain kernel — Money, AccountId, TransactionId, Direction, LedgerEntry
 │       ├── security/   # SecurityConfig — permit-all skeleton, real auth deferred to Phase 3+
 │       └── web/        # HelloController — health-style smoke endpoint
 ├── src/main/resources/
