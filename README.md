@@ -141,6 +141,7 @@ A layered skim path — start at the top, go deeper as the need arises:
 - [docs/adr/](docs/adr/) — Architecture Decision Records (0001–0007; 0008+ land in Phase 1).
 - [docs/glossary.md](docs/glossary.md) — domain vocabulary: the ubiquitous language and canonical term names.
 - [docs/onboarding/](docs/onboarding/) — first-day setup beyond the Quickstart (scaffold; fills in Phase 1).
+- [CHANGELOG.md](CHANGELOG.md) — notable changes per version (Keep a Changelog).
 
 ## Code style
 
