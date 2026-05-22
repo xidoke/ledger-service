@@ -16,6 +16,7 @@ section to the new version + date and start a fresh `[Unreleased]`.
 - Flyway migrations V2–V4 for the domain schema: `accounts` (UUID PK, BIGINT `balance`, optimistic-lock `version`, `updated_at` trigger), `transactions`, and append-only `ledger_entries` (DB trigger rejecting UPDATE/DELETE, `amount > 0` check, `(account_id, created_at)` index). Money columns are BIGINT minor units (ADR-0007); enum-like columns use VARCHAR + CHECK.
 - `MoneyFormatter` — currency-aware display formatting (minor → major via ISO 4217 fraction digits), centralizing the `/100` conversion so it never scatters (ADR-0007).
 - Account persistence foundation (hexagonal, ADR-0018): `account/` split into `domain/` (pure `Account` aggregate + `AccountRepository` port) and `adapter/out/` (`AccountJpaEntity` + mapper + `AccountPersistenceAdapter` over Spring Data JPA, optimistic-lock `@Version`). ArchUnit now enforces that `..domain..` is free of JPA/Spring.
+- Account endpoints: `POST /accounts`, `GET /accounts/{id}`, `GET /accounts/{id}/entries` (entry history via a `JdbcClient` read query). Unknown id → RFC 7807 404; validation failures → 400 with `fieldErrors`. A shared `common/error/NotFoundException` maps to 404 centrally so domain exceptions stay framework-free.
 
 ### Changed
 

@@ -1,5 +1,6 @@
 package com.xidoke.ledger.common.web;
 
+import com.xidoke.ledger.common.error.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -48,6 +49,14 @@ public class ProblemDetailExceptionHandler extends ResponseEntityExceptionHandle
         ProblemDetail body = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Resource not found");
         body.setTitle("Not Found");
         return handleExceptionInternal(ex, body, headers, HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    ProblemDetail handleNotFound(NotFoundException ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Not Found");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        return problem;
     }
 
     @ExceptionHandler(IllegalStateException.class)

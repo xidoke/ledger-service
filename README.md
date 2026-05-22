@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/xidoke/ledger-service/graph/badge.svg)](https://codecov.io/gh/xidoke/ledger-service)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Status:** Phase 1 — core domain model in progress (Phase 0 skeleton complete). No HTTP API yet.
+**Status:** Phase 1 — core ledger in progress. First domain endpoints live (`/accounts`); transfers/top-ups next.
 
 ## What it does
 
@@ -77,7 +77,15 @@ work; this mode mirrors a deployed environment. Stop with
 
 ## Basic usage
 
-Phase 0 exposes only the skeleton endpoints — domain endpoints (`/accounts`, `/transfers`, `/topups`) land in Phase 1.
+Account endpoints are live; `/transfers` and `/topups` land later in Phase 1.
+
+```http
+POST /accounts                 → 201 {id, ownerRef, currency, status, balanceMinorUnits}   body {ownerRef?, currency}
+GET  /accounts/{id}            → 200 (account detail incl. balanceMinorUnits)
+GET  /accounts/{id}/entries    → 200 (ledger-entry history, newest first)
+```
+
+Skeleton endpoints from Phase 0 remain:
 
 ```http
 GET /hello             → 200 {"message":"ledger-service up"}
