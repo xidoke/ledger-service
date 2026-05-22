@@ -15,7 +15,11 @@ Captures architectural decisions — **what** was decided, **when**, and **why**
 | [0005](0005-ledger-model.md)           | Double-entry, append-only ledger entries                                               | Accepted |
 | [0006](0006-balance-representation.md) | Balance cached in the same DB transaction as ledger entries                            | Accepted |
 | [0007](0007-money-representation.md)   | BIGINT integer minor units                                                             | Accepted |
+| [0008](0008-currency-scope.md)         | Single currency at Phase 0-1 (defer multi-currency + FX)                               | Accepted |
+| [0009](0009-system-funding-account.md) | SYSTEM_FUNDING counterpart so top-ups stay balanced                                    | Accepted |
 | [0010](0010-aggregate-boundary.md)     | Account-per-aggregate (Account is the locking boundary)                                | Accepted |
+| [0019](0019-ddd-tactical-patterns.md)  | DDD tactical patterns; LedgerEntry as a shared immutable fact                          | Accepted |
+| [0031](0031-identifier-strategy.md)    | UUID app-generated ids (distributed-ready; v4 → v7)                                    | Accepted |
 
 Phase 1 ADRs (0008-0017) land as decisions land — currency scope, system funding account, aggregate boundary, concurrency strategy, idempotency, event publishing (outbox), PII handling, event schema versioning, reconciliation, observability.
 
