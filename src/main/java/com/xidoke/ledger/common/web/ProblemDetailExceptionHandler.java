@@ -1,6 +1,7 @@
 package com.xidoke.ledger.common.web;
 
 import com.xidoke.ledger.common.error.NotFoundException;
+import com.xidoke.ledger.common.error.UnprocessableEntityException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -21,8 +22,18 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * Maps exceptions to RFC 7807 ProblemDetail responses (application/problem+json) so every error shares one
- * machine-readable shape. Phase 0 covers the framework + generic exceptions; domain exceptions (AccountNotFound,
- * InsufficientBalance, …) add their own handlers here in Phase 1.
+ * machine-readable shape.
+ *
+ * <p>Status taxonomy for domain failures (kept deliberately distinct so each code carries one meaning):
+ *
+ * <ul>
+ *   <li>{@code 400} — malformed/invalid request syntax (bean-validation failures);
+ *   <li>{@code 404} — {@link NotFoundException}: the target resource does not exist;
+ *   <li>{@code 422} — {@link UnprocessableEntityException}: well-formed request, existing target, but a business rule
+ *       forbids it (insufficient funds, self-transfer, currency mismatch);
+ *   <li>{@code 409} — {@link IllegalStateException}: a conflict with current state (reserved also for optimistic-lock
+ *       retry exhaustion in M4).
+ * </ul>
  */
 @RestControllerAdvice
 public class ProblemDetailExceptionHandler extends ResponseEntityExceptionHandler {
@@ -55,6 +66,14 @@ public class ProblemDetailExceptionHandler extends ResponseEntityExceptionHandle
     ProblemDetail handleNotFound(NotFoundException ex, HttpServletRequest request) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Not Found");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        return problem;
+    }
+
+    @ExceptionHandler(UnprocessableEntityException.class)
+    ProblemDetail handleUnprocessable(UnprocessableEntityException ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        problem.setTitle("Unprocessable Entity");
         problem.setInstance(URI.create(request.getRequestURI()));
         return problem;
     }
