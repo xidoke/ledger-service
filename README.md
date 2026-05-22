@@ -3,6 +3,7 @@
 > Mini e-wallet / double-entry ledger service in Java 21 + Spring Boot 3.
 
 [![CI](https://github.com/xidoke/ledger-service/actions/workflows/ci.yml/badge.svg)](https://github.com/xidoke/ledger-service/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/xidoke/ledger-service/graph/badge.svg)](https://codecov.io/gh/xidoke/ledger-service)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Status:** Phase 0 — setup & skeleton. API not yet implemented.
