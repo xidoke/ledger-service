@@ -1,4 +1,4 @@
-package com.xidoke.ledger.account;
+package com.xidoke.ledger.account.domain;
 
 import com.xidoke.ledger.common.domain.AccountId;
 import com.xidoke.ledger.common.domain.CurrencyMismatchException;

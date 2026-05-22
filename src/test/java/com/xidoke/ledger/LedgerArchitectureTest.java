@@ -66,4 +66,15 @@ class LedgerArchitectureTest {
                     "com.xidoke.ledger.common.web..")
             .as("@RestController must reside in a feature package or common.web")
             .allowEmptyShould(true);
+
+    // Hexagonal (ADR-0018): domain stays framework-free — no JPA / Spring imports leak into it.
+    @ArchTest
+    static final ArchRule domainIsFrameworkFree = noClasses()
+            .that()
+            .resideInAPackage("..domain..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAnyPackage("jakarta.persistence..", "org.springframework..")
+            .as("domain packages must not depend on JPA or Spring (hexagonal — ADR-0018)")
+            .allowEmptyShould(true);
 }
