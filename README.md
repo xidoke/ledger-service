@@ -142,6 +142,7 @@ A layered skim path — start at the top, go deeper as the need arises:
 - [docs/glossary.md](docs/glossary.md) — domain vocabulary: the ubiquitous language and canonical term names.
 - [docs/onboarding/](docs/onboarding/) — first-day setup beyond the Quickstart (scaffold; fills in Phase 1).
 - [CHANGELOG.md](CHANGELOG.md) — notable changes per version (Keep a Changelog).
+- [AGENTS.md](AGENTS.md) — tool-neutral AI-agent instructions (stack, commands, conventions, DO/DON'T).
 
 ## Code style
 
