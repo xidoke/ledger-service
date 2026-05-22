@@ -96,7 +96,7 @@ ledger-service/
     └── TestLedgerServiceApplication.java
 ```
 
-Doc artifacts (`ARCHITECTURE.md`, `docs/adr/`, `docs/onboarding/`) land during Phase 0 weeks 2–4 — see roadmap.
+Architecture, decision records, and onboarding docs live in `ARCHITECTURE.md` and `docs/` — see [Further reading](#further-reading).
 
 ## Roadmap
 
@@ -106,15 +106,15 @@ The project advances through deliberate phases, each with explicit exit criteria
 - **Phase 1 (~8 weeks)** — Core ledger (level 0–1): double-entry entries, idempotency keys, optimistic locking with retry, transactional outbox, reconciliation job. Release **v0.1** deployed.
 - **Phase 2+** — Two-service split via outbox boundary, saga for cross-service flows, Kafka, observability stack, scale work.
 
-Detailed phase plans and architectural decision records are tracked in a personal knowledge base and will migrate into this repo under `docs/` during Phase 0.
+Architecture decision records live in [docs/adr/](docs/adr/) (0001–0007); the country-map overview is in [ARCHITECTURE.md](ARCHITECTURE.md). Detailed phase plans are tracked separately and surface under `docs/` as they solidify.
 
 ## Further reading
 
-The following docs land during Phase 0 — links are forward references:
+A layered skim path — start at the top, go deeper as the need arises:
 
-- `ARCHITECTURE.md` — where to make a change (module map, key invariants). See [architecture-md-pattern](https://matklad.github.io/2021/02/06/ARCHITECTURE.md.html).
-- `docs/adr/` — Architecture Decision Records (ADR-001..007 in Phase 0, ADR-008+ in Phase 1).
-- `docs/onboarding/` — first-day setup beyond the Quickstart (IDE config, debug tips, common pitfalls).
+- [ARCHITECTURE.md](ARCHITECTURE.md) — where to make a change: module map, invariants, data flow.
+- [docs/adr/](docs/adr/) — Architecture Decision Records (0001–0007; 0008+ land in Phase 1).
+- [docs/onboarding/](docs/onboarding/) — first-day setup beyond the Quickstart (scaffold; fills in Phase 1).
 
 ## Code style
 
