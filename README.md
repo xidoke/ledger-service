@@ -202,6 +202,10 @@ Solo learning project for now — external PRs not accepted at this stage. Conve
 
 Commit convention: [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/) with `Refs LDG-N` / `Closes LDG-N` footer for Linear integration.
 
+## Security
+
+Found a security issue? See [SECURITY.md](SECURITY.md) — report privately via GitHub, please don't open a public issue.
+
 ## License
 
 MIT — see [LICENSE](LICENSE). Copyright (c) 2026 xidoke.
