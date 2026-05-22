@@ -18,12 +18,14 @@ Captures architectural decisions — **what** was decided, **when**, and **why**
 | [0008](0008-currency-scope.md)         | Single currency at Phase 0-1 (defer multi-currency + FX)                               | Accepted |
 | [0009](0009-system-funding-account.md) | SYSTEM_FUNDING counterpart so top-ups stay balanced                                    | Accepted |
 | [0010](0010-aggregate-boundary.md)     | Account-per-aggregate (Account is the locking boundary)                                | Accepted |
+| [0017](0017-observability.md)          | Structured JSON log + MDC correlation id + Spring Actuator                             | Accepted |
+| [0018](0018-hexagonal-architecture.md) | Hexagonal (Ports & Adapters) inside each module                                        | Accepted |
 | [0019](0019-ddd-tactical-patterns.md)  | DDD tactical patterns; LedgerEntry as a shared immutable fact                          | Accepted |
 | [0031](0031-identifier-strategy.md)    | UUID app-generated ids (distributed-ready; v4 → v7)                                    | Accepted |
 
-Phase 1 ADRs (0008-0017) land as decisions land — currency scope, system funding account, aggregate boundary, concurrency strategy, idempotency, event publishing (outbox), PII handling, event schema versioning, reconciliation, observability.
+The remaining Phase-1 ADRs land as their code lands: concurrency strategy (0011), idempotency (0012), event publishing/outbox (0013), PII handling (0014), event schema versioning (0015), reconciliation (0016) — still in the vault, each with a write-issue at its milestone. The deferred Phase-B decisions (0020–0030: resilience, rate-limiting, caching, gateway, saga, DLQ, inbox, deployment, ACL, strangler-fig) stay vault-only until there is code to record.
 
-> **Numbering note**: ADR numbers track the vault decision log (`Research/ledger-system-ADR/wiki/adr-NNN-*`), not repo creation order, so each repo ADR keeps the same number as its source analysis. A decision is distilled here when its code lands — hence numbers may be non-contiguous (e.g. 0008 currency-scope and 0009 system-funding-account are still pending while 0010 is distilled). Numbers are never reused.
+> **Numbering note**: ADR numbers track the vault decision log (`Research/ledger-system-ADR/wiki/adr-NNN-*`), not repo creation order, so each repo ADR keeps the same number as its source analysis. A decision is distilled here when its code lands — hence numbers may be non-contiguous (e.g. 0011–0016 are not yet distilled while 0017/0018/0019 are). Numbers are never reused.
 
 ## Convention
 
