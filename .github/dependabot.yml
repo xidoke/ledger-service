@@ -1,0 +1,18 @@
+# Dependabot: open PRs when Maven deps or GitHub Actions have updates.
+# Limit kept low (single-module project) to avoid PR flood.
+version: 2
+
+updates:
+  # Maven dependencies (pom.xml)
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+
+  # GitHub Actions used in workflows (uses: owner/action@vX)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
