@@ -14,7 +14,7 @@ import java.util.Objects;
  * (ADR-0005). Entries accumulate while PENDING (Proposed-Object pattern); {@link #post()} validates the invariant and
  * freezes the transaction. Entries themselves are immutable facts owned by the shared kernel.
  */
-public class Transaction {
+public final class Transaction {
 
     private final TransactionId id;
     private final TransactionType type;

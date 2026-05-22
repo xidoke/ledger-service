@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  * describing what happened (ADR-0005 log-is-truth). {@code ownerRef} is null for system accounts such as SYSTEM_FUNDING
  * (ADR-0010).
  */
-public class Account {
+public final class Account {
 
     private final AccountId id;
     private final @Nullable String ownerRef;
