@@ -82,7 +82,13 @@ Phase 0 exposes only the skeleton endpoints — domain endpoints (`/accounts`, `
 ```http
 GET /hello             → 200 {"message":"ledger-service up"}
 GET /actuator/health   → 200 {"status":"UP"}
+GET /actuator/info     → 200 (build version + Java info)
+GET /actuator/metrics  → 200 (Micrometer metric names)
 ```
+
+Every request carries a correlation id: send `X-Correlation-Id` (or one is generated),
+it's echoed on the response and included in every log line. Console logs are **ECS JSON**
+(one object per line) — MDC fields like `correlationId` appear as top-level keys.
 
 ## Repository layout
 
