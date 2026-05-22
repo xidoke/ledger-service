@@ -59,6 +59,21 @@ See [Basic usage](#basic-usage) below for the rest of the Phase 0 endpoints.
 ./mvnw spring-boot:test-run
 ```
 
+**Alternative — full stack in containers** (app + Postgres, one command):
+
+```bash
+docker compose -f compose.app.yaml up --build
+# Once both containers are healthy:
+curl http://localhost:8080/hello
+```
+
+This builds the app image from the `Dockerfile` and runs it next to Postgres
+(see `compose.app.yaml`). The `-f` is required: `compose.app.yaml` is kept out of
+Docker/Spring auto-discovery so the `spring-boot:run` loop above (which uses the
+postgres-only `compose.yaml`) is never disturbed. That loop is faster for daily
+work; this mode mirrors a deployed environment. Stop with
+`docker compose -f compose.app.yaml down`.
+
 ## Basic usage
 
 Phase 0 exposes only the skeleton endpoints — domain endpoints (`/accounts`, `/transfers`, `/topups`) land in Phase 1.
