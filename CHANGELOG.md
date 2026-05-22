@@ -12,6 +12,8 @@ section to the new version + date and start a fresh `[Unreleased]`.
 
 ### Added
 
+- Core domain model (Phase 1): `Account` aggregate (balance cache, status, `debit`/`credit` enforcing ACTIVE + no-overdraw), `Transaction` aggregate (double-entry `Σ debit == Σ credit` posting), immutable `LedgerEntry` fact, and a shared domain kernel (`Money`, `AccountId`, `TransactionId`, `Direction`) under `common/domain`. ADR-0010 (Account-per-aggregate).
+
 ### Changed
 
 ### Deprecated
