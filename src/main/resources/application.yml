@@ -46,6 +46,9 @@ ledger:
     batch-size: 100
     # Delay before the first drain after startup (lets the app warm up; tests push it out to disable auto-polling).
     initial-delay: PT2S
+  reconciliation:
+    # Drift check cadence (Spring cron). Default 02:00 daily; alert-only, never auto-correct (ADR-0016).
+    cron: "0 0 2 * * *"
 
 # Console logs are emitted as ECS JSON (one JSON object per line); MDC entries
 # such as correlationId become top-level fields. Spring Boot 3.4+ native — no
