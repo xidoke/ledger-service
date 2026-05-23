@@ -32,6 +32,14 @@ ledger:
     max-attempts: 5
     base-backoff-millis: 25
     max-backoff-millis: 200
+  idempotency:
+    reaper:
+      # PENDING rows are claims; a real request never runs this long, so anything older is a crash-orphan.
+      pending-ttl: PT10M
+      # COMPLETED rows replay responses within the client retry window (Stripe: 24h); reusable after.
+      completed-ttl: PT24H
+      # How often the sweep runs (delay between completions).
+      interval: PT10M
 
 # Console logs are emitted as ECS JSON (one JSON object per line); MDC entries
 # such as correlationId become top-level fields. Spring Boot 3.4+ native — no

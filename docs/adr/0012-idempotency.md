@@ -64,7 +64,7 @@ Hiện thực: `idempotency/` (filter `OncePerRequestFilter` + `IdempotencyJdbcS
 
 ## Risks & open questions
 
-- **Orphaned PENDING khi crash mid-flight**: nếu process chết sau claim, trước complete/release → row PENDING kẹt → 409 vĩnh viễn cho key đó. Cần TTL/reaper sweep (Stripe 24h) — đã capture là follow-up (LDG-67); `created_at` được ghi sẵn cho việc này.
+- **Orphaned PENDING khi crash mid-flight**: nếu process chết sau claim, trước complete/release → row PENDING kẹt → 409 vĩnh viễn cho key đó. Giải bằng `IdempotencyKeyReaper` (LDG-67): `@Scheduled` sweep xoá PENDING quá `pending-ttl` (mặc định 10m — request thật không chạy lâu vậy) + COMPLETED quá `completed-ttl` (24h, hết retry window) → key tái dùng được; config `ledger.idempotency.reaper.*`, `created_at` là mốc. Caveat: `@Scheduled` chạy trên mọi instance khi multi-instance (DELETE idempotent nên vô hại, chỉ thừa).
 - **Key không ép format**: validate max length 255, không ép UUID — đủ cho Nấc 0-1.
 - **`response_body` lớn**: TTL 24h + traffic Nấc 0-1 không phải vấn đề; Nấc 2+ review storage policy.
 

@@ -3,7 +3,9 @@ package com.xidoke.ledger.idempotency.adapter.out;
 import com.xidoke.ledger.idempotency.domain.IdempotencyRecord;
 import com.xidoke.ledger.idempotency.domain.IdempotencyStatus;
 import com.xidoke.ledger.idempotency.domain.IdempotencyStore;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -61,6 +63,15 @@ public class IdempotencyJdbcStore implements IdempotencyStore {
     public void release(String key) {
         jdbc.sql("DELETE FROM idempotency_keys WHERE key = :key AND status = 'PENDING'")
                 .param("key", key)
+                .update();
+    }
+
+    @Override
+    public int sweepExpired(Instant pendingCutoff, Instant completedCutoff) {
+        return jdbc.sql("DELETE FROM idempotency_keys WHERE (status = 'PENDING' AND created_at < :pending) "
+                        + "OR (status = 'COMPLETED' AND created_at < :completed)")
+                .param("pending", OffsetDateTime.ofInstant(pendingCutoff, ZoneOffset.UTC))
+                .param("completed", OffsetDateTime.ofInstant(completedCutoff, ZoneOffset.UTC))
                 .update();
     }
 }
