@@ -6,7 +6,7 @@ Project-specific guidance for Claude Code when working in this repo. Read alongs
 
 ## Project overview
 
-`ledger-service` is a mini e-wallet backend on a **double-entry ledger**. Stack: Java 21 + Spring Boot 3.5 + PostgreSQL + Flyway. Phase 0 = skeleton + tooling stack; Phase 1 = core ledger (Nấc 0-1). Modular monolith, **not** event sourcing (per ADR-001). See [README.md](README.md#what-it-does) for product context.
+`ledger-service` is a mini e-wallet backend on a **double-entry ledger**. Stack: Java 21 + Spring Boot 3.5 + PostgreSQL + Flyway. Phase 0 (skeleton + tooling) is done; **Phase 1 (core ledger, Nấc 0-1) is in progress** — double-entry posting, top-up/transfer endpoints, and idempotency are live; concurrency + outbox are next. Modular monolith, **not** event sourcing (per ADR-0001). See [README.md](README.md#what-it-does) for product context.
 
 ## Build / test / run
 
@@ -21,10 +21,10 @@ docker compose up        # alternative: full stack via Compose
 
 ## Key paths
 
-- `src/main/java/com/xidoke/ledger/` — application code, **package-by-feature** (`account/`, `transfer/`, `topup/`, `ledger/`, `idempotency/`, `outbox/`, `common/`). Each feature package has its own `CLAUDE.md` placeholder (Phase 1 fills domain rules; lazy-loaded when you read code in the package).
+- `src/main/java/com/xidoke/ledger/` — application code, **package-by-feature** (`account/`, `transfer/`, `topup/`, `ledger/`, `idempotency/`, `outbox/`, `common/`), each structured hexagonally (`domain/` + `adapter/in` + `adapter/out`, ADR-0018). Most feature packages have their own `CLAUDE.md` documenting domain rules (lazy-loaded when you read code in the package); `outbox/` is still a placeholder.
 - `src/main/resources/application.yml` — Spring config; do NOT modify without ADR rationale.
 - `src/main/resources/db/migration/V*.sql` — Flyway migrations; **immutable once applied** — write a new migration instead of editing.
-- `docs/adr/` — Architecture Decision Records (MADR format). ADR-001..007 land in LDG-16.
+- `docs/adr/` — Architecture Decision Records (MADR format). Distilled as code lands (0001–0010, 0012, 0017, 0018, 0019, 0031 so far); see `docs/adr/README.md` for the catalog.
 - `docs/glossary.md` — domain term dictionary (ubiquitous language). Defer to it when a term is ambiguous.
 - `pom.xml` — dependencies; new deps require ADR + Dependabot review.
 - `lefthook.yml` — pre-commit (Spotless) + commit-msg (Conventional Commits regex). Run `brew install lefthook && lefthook install` once after clone.
@@ -42,7 +42,7 @@ The Obsidian vault at `/Users/xidoke/Library/Mobile Documents/iCloud~md~obsidian
 
 - `Dự án - Ledger Service/CLAUDE.md` — vault-side agent context (planning + roadmap framing)
 - `Dự án - Ledger Service/30 - Bản đồ tri thức.md` — master map: research × phase × ADR × LDG
-- `Dự án - Ledger Service/50 - Phases/Phase 0 - Skeleton.md` — current phase plan with all LDG mappings
+- `Dự án - Ledger Service/50 - Phases/` — phase plans with LDG mappings (`Phase 0 - Skeleton.md` done; later phases alongside it as the project progresses)
 - `Research/linear-issue-management/wiki/ledger-service-applied.md` — Linear conventions (branch, commit, label, milestone)
 - `Research/java-project-setup/wiki/<note>` — toolchain decisions per topic
 - `Research/ledger-systems/wiki/<note>` — domain (double-entry) concepts (Phase 1+ reading)

@@ -4,7 +4,7 @@ Thanks for your interest in contributing.
 
 This file is the contract for changing this repo: how to set up, what conventions to follow, how PRs are reviewed.
 
-> Status: Phase 0 — single-author. Conventions designed to be team-portable.
+> Status: Phase 1 (core ledger) — single-author. Conventions designed to be team-portable.
 
 ## Quickstart
 
@@ -106,7 +106,7 @@ the README anatomy convention.
 Refs LDG-25
 ```
 
-Phase 0 note: skeleton work mostly `chore` / `build` / `ci`. Reserve `feat` for Phase 1+ when user-visible domain endpoints land.
+Historical note: Phase 0 skeleton work was mostly `chore` / `build` / `ci`; from Phase 1 on, user-visible domain endpoints land as `feat` (and their tests as `test`).
 
 ## Pull requests
 

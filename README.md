@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/xidoke/ledger-service/graph/badge.svg)](https://codecov.io/gh/xidoke/ledger-service)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Status:** Phase 1 — core ledger in progress. Account, top-up, and transfer endpoints live; idempotency + concurrency next.
+**Status:** Phase 1 — core ledger in progress. Account, top-up, transfer, and idempotency are live (double-entry posting, balance cache, retry-safe money endpoints); optimistic-lock concurrency + transactional outbox are next.
 
 ## What it does
 
@@ -124,12 +124,13 @@ ledger-service/
 │   ├── transfer/       # Transfer use case (POST /transfers — balanced DEBIT/CREDIT)
 │   ├── topup/          # Top-up use case (POST /accounts/{id}/topups)
 │   ├── ledger/         # Transaction aggregate (double-entry posting, Σ debit == Σ credit)
-│   ├── idempotency/    # (empty — Phase 1)
-│   ├── outbox/         # (empty — Phase 1)
+│   ├── idempotency/    # Idempotency-Key filter + idempotency_keys store (claim-first dedup)
+│   ├── outbox/         # (empty — pending M5)
 │   └── common/
 │       ├── domain/     # shared domain kernel — Money, AccountId, TransactionId, Direction, LedgerEntry
+│       ├── error/      # framework-free base exceptions (NotFoundException → 404, UnprocessableEntityException → 422)
 │       ├── security/   # SecurityConfig — permit-all skeleton, real auth deferred to Phase 3+
-│       └── web/        # HelloController — health-style smoke endpoint
+│       └── web/        # CorrelationIdFilter, ProblemDetailExceptionHandler (RFC 7807), HelloController
 ├── src/main/resources/
 │   ├── application.yml                # Config
 │   └── db/migration/                  # Flyway SQL migrations (`V<n>__description.sql`)
@@ -145,8 +146,8 @@ Architecture, decision records, and onboarding docs live in `ARCHITECTURE.md` an
 
 The project advances through deliberate phases, each with explicit exit criteria:
 
-- **Phase 0 (current, ~4 weeks)** — Foundations & skeleton: project files, code-quality stack (Spotless, ArchUnit, JaCoCo, SonarCloud), CI on GitHub Actions, Docker Compose + Flyway, structured logging + correlation ID, Actuator health groups.
-- **Phase 1 (~8 weeks)** — Core ledger (level 0–1): double-entry entries, idempotency keys, optimistic locking with retry, transactional outbox, reconciliation job. Release **v0.1** deployed.
+- **Phase 0 (done, ~4 weeks)** — Foundations & skeleton: project files, code-quality stack (Spotless, ArchUnit, JaCoCo, SonarCloud), CI on GitHub Actions, Docker Compose + Flyway, structured logging + correlation ID, Actuator health groups.
+- **Phase 1 (current, ~8 weeks)** — Core ledger (level 0–1): double-entry entries, idempotency keys, optimistic locking with retry, transactional outbox, reconciliation job. Release **v0.1** deployed. _(double-entry posting + idempotency done; concurrency + outbox + reconciliation next.)_
 - **Phase 2+** — Two-service split via outbox boundary, saga for cross-service flows, Kafka, observability stack, scale work.
 
 Architecture decision records live in [docs/adr/](docs/adr/) (see the catalog there; Phase 1 ADRs land as decisions land); the country-map overview is in [ARCHITECTURE.md](ARCHITECTURE.md). Detailed phase plans are tracked separately and surface under `docs/` as they solidify.
