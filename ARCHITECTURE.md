@@ -13,7 +13,8 @@ the behaviour you are touching.
 > balance-cache, top-up + transfer endpoints, the Idempotency-Key filter), all
 > structured hexagonally (ADR-0018). Optimistic-lock concurrency with bounded retry is
 > now live (M4), and the transactional-outbox write side (events committed with the
-> posting, ADR-0013). Still **pending**: the outbox poller + reconciliation job (M5) —
+> posting, ADR-0013) with a polling poller draining it to an idempotent consumer. Still
+> **pending**: the reconciliation job (M5) —
 > sections below marked _(pending — Mn)_ are not implemented yet. A richer C4 diagram +
 > per-subsystem deep dives are tracked in LDG-59.
 
@@ -67,15 +68,15 @@ technical layer. Inside each feature it is structured **hexagonally** (ADR-0018)
 (REST controller), `adapter/out` (JPA/JdbcClient implementation of the port). Names below
 are written out in full so they stay grep-able — follow the name, not a hyperlink.
 
-|    Package     |                                                            Responsibility                                                             |      Status       |
-|----------------|---------------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| `account/`     | `Account` aggregate (balance cache, status, `version`), `debit`/`credit` enforcing ACTIVE + no-overdraw; CRUD endpoints.              | live              |
-| `topup/`       | Top-up use case — credits a user account against the `SYSTEM_FUNDING` counterpart, one balanced posting.                              | live              |
-| `transfer/`    | Transfer use case — orchestrates a two-leg `DEBIT from / CREDIT to` posting between two user accounts.                                | live              |
-| `ledger/`      | `Transaction` aggregate — the double-entry posting where `Σ DEBIT == Σ CREDIT` is enforced (`post()`). Reconciliation job is pending. | live (recon: M5)  |
-| `idempotency/` | `Idempotency-Key` filter + `idempotency_keys` store: claim-first dedup guarding the money endpoints.                                  | live              |
-| `outbox/`      | Transactional outbox: event rows written in the posting transaction (write side live); poller publishes them.                         | live (poller: M5) |
-| `common/`      | Cross-cutting + the shared domain kernel — see below.                                                                                 | live              |
+|    Package     |                                                                  Responsibility                                                                  |      Status      |
+|----------------|--------------------------------------------------------------------------------------------------------------------------------------------------|------------------|
+| `account/`     | `Account` aggregate (balance cache, status, `version`), `debit`/`credit` enforcing ACTIVE + no-overdraw; CRUD endpoints.                         | live             |
+| `topup/`       | Top-up use case — credits a user account against the `SYSTEM_FUNDING` counterpart, one balanced posting.                                         | live             |
+| `transfer/`    | Transfer use case — orchestrates a two-leg `DEBIT from / CREDIT to` posting between two user accounts.                                           | live             |
+| `ledger/`      | `Transaction` aggregate — the double-entry posting where `Σ DEBIT == Σ CREDIT` is enforced (`post()`). Reconciliation job is pending.            | live (recon: M5) |
+| `idempotency/` | `Idempotency-Key` filter + `idempotency_keys` store: claim-first dedup guarding the money endpoints.                                             | live             |
+| `outbox/`      | Transactional outbox: events written in the posting transaction, drained by a `@Scheduled` poller (log-only at Nấc 0) to an idempotent consumer. | live             |
+| `common/`      | Cross-cutting + the shared domain kernel — see below.                                                                                            | live             |
 
 `LedgerEntry` is **not** in `ledger/`: it is an immutable shared fact in `common/domain`
 (shared kernel, ADR-0019), emitted by `Account.debit/credit` and collected by `Transaction`.
@@ -88,7 +89,7 @@ Within `common/`:
 - `common/security/` — `SecurityConfig`, a permit-all skeleton; real auth is deferred to Phase 3+.
 
 Schema migrations live in `src/main/resources/db/migration/` as Flyway
-`V<n>__description.sql` files (V1 baseline → V7 idempotency in-flight so far).
+`V<n>__description.sql` files (V1 baseline → V9 idempotent-consumer inbox so far).
 
 ## Invariants
 
@@ -127,15 +128,16 @@ HTTP request
   → use-case service orchestrates, in one @Transactional:
         ledger/  posts the double-entry pair (Transaction.post enforces Σ DEBIT == Σ CREDIT)
         account/ updates the balance cache (+ version bump)
-        outbox/  appends the domain event row   (poller: pending — M5)
+        outbox/  appends the domain event row
   → single ACID commit  →  PostgreSQL
+  → OutboxPoller (@Scheduled) later drains PENDING → idempotent consumer → marks SENT
 ```
 
 The idempotency check runs in a servlet filter *before* the controller (claim-first via
 `INSERT … ON CONFLICT`, committed separately so concurrent requests can see it). The
 ledger entries + balance cache commit in one ACID transaction (ADR-0006). The outbox row
 is written in that same transaction (ADR-0013) so there is no dual-write problem; a
-separate poller _(pending — M5)_ then publishes downstream.
+separate `@Scheduled` poller then drains it to an idempotent consumer (log-only at Nấc 0).
 
 ## Cross-cutting concerns
 

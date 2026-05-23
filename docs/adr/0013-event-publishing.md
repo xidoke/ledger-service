@@ -49,7 +49,7 @@ Trong cùng `@Transactional` với business logic, INSERT thêm một row `outbo
 ## Trạng thái triển khai (2026-05-24)
 
 - **Write side (LDG-54, đã land):** `outbox` table (Flyway V8) — `id BIGINT IDENTITY` (monotonic = thứ tự delivery cho poller; chọn IDENTITY thay vì ULID vì single-instance Postgres, đơn giản + strict-order), `aggregate_id` (= transaction id), `event_type`, `payload JSONB`, `status PENDING/SENT`, `schema_version`, `created_at`, `published_at`, partial index `(id) WHERE PENDING`. `TransferService`/`TopupService` gọi `OutboxRepository.append(...)` (port `outbox/domain`, impl JdbcClient `outbox/adapter/out`) **trong cùng `@Transactional`** sau khi ghi ledger → atomic. Event: `TransferPosted` / `TopupPosted` (scalar payload, contract ổn định cho consumer). ArchUnit cho phép use-case → outbox (emit), cấm chiều ngược.
-- **Read side (LDG-55, chưa land):** poller `@Scheduled` đọc PENDING → publish (Nấc 0: log) → mark SENT. Khi land sẽ là consumer đầu tiên phải idempotent.
+- **Read side (LDG-55, đã land):** `OutboxPoller` (`@Scheduled @Transactional`) đọc PENDING `ORDER BY id … FOR UPDATE SKIP LOCKED` (multi-poller-safe) → publish → `markSent`+`published_at`; row publish-fail giữ PENDING (retry tick sau). Nấc 0 chưa có broker nên "publish" = giao cho `LoggingIdempotentConsumer` (in-process) — **idempotent-consumer skeleton**: dedup theo `outbox.id` (stable publisher id) qua inbox `processed_events` (Flyway V9, `INSERT … ON CONFLICT DO NOTHING` = claim atomic, tránh check-then-act race). At-least-once → duplicate redelivery chạy side-effect đúng 1 lần. Phase 2 swap consumer sang broker thật, giữ nguyên shape dedup-then-act.
 
 ## Consequences
 

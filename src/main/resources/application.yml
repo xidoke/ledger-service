@@ -40,6 +40,12 @@ ledger:
       completed-ttl: PT24H
       # How often the sweep runs (delay between completions).
       interval: PT10M
+  outbox:
+    # Poller cadence (delay between drains) + how many PENDING events per tick.
+    poll-interval: PT1S
+    batch-size: 100
+    # Delay before the first drain after startup (lets the app warm up; tests push it out to disable auto-polling).
+    initial-delay: PT2S
 
 # Console logs are emitted as ECS JSON (one JSON object per line); MDC entries
 # such as correlationId become top-level fields. Spring Boot 3.4+ native — no
