@@ -9,8 +9,10 @@ import com.xidoke.ledger.common.domain.TransactionId;
 import com.xidoke.ledger.ledger.domain.Transaction;
 import com.xidoke.ledger.ledger.domain.TransactionRepository;
 import com.xidoke.ledger.ledger.domain.TransactionType;
+import com.xidoke.ledger.outbox.domain.OutboxRepository;
 import com.xidoke.ledger.transfer.domain.SameCurrencyRequiredException;
 import com.xidoke.ledger.transfer.domain.SelfTransferException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.Instant;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,17 +21,24 @@ import org.springframework.transaction.annotation.Transactional;
  * Transfer use case: move money between two user accounts as one balanced posting — {@code DEBIT from / CREDIT to}
  * (ADR-0005). Both balance caches and the transaction + its entries commit in a single {@code @Transactional}
  * (ADR-0006), so any rejection rolls the whole posting back. The source account's no-overdraw invariant is enforced by
- * {@link Account#debit}, which throws before any write. No idempotency (M3) or concurrency retry (M4) yet.
+ * {@link Account#debit}, which throws before any write. The {@code TransferPosted} outbox event is appended in the same
+ * transaction (ADR-0013), so it commits with the posting or not at all. Idempotency and concurrency retry are applied
+ * by the outer layers (filter + controller), not here.
  */
 @Service
 public class TransferService {
 
     private final AccountRepository accounts;
     private final TransactionRepository transactions;
+    private final OutboxRepository outbox;
 
-    public TransferService(AccountRepository accounts, TransactionRepository transactions) {
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "Repositories are stateless Spring-managed singletons injected by the container")
+    public TransferService(AccountRepository accounts, TransactionRepository transactions, OutboxRepository outbox) {
         this.accounts = accounts;
         this.transactions = transactions;
+        this.outbox = outbox;
     }
 
     @Transactional
@@ -55,6 +64,12 @@ public class TransferService {
         accounts.save(from);
         accounts.save(to);
         transactions.save(tx);
+        outbox.append(
+                txId.value(),
+                "TransferPosted",
+                new TransferPosted(
+                        txId.value(), fromId.value(), toId.value(), amount.minorUnits(), from.currencyCode(), now),
+                1);
 
         return new TransferResult(txId, from, to);
     }

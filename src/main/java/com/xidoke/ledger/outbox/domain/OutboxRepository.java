@@ -1,0 +1,18 @@
+package com.xidoke.ledger.outbox.domain;
+
+import java.util.UUID;
+
+/**
+ * Outbound port for the transactional outbox (ADR-0013). A use case calls {@link #append} inside its own
+ * {@code @Transactional}, so the event row commits atomically with the ledger write — no dual-write. The poller
+ * (LDG-55) is the read side; this port is write-only.
+ */
+public interface OutboxRepository {
+
+    /**
+     * Append a PENDING event in the current transaction. {@code payload} is serialized to JSON by the adapter;
+     * {@code aggregateId} is the entity the event is about (the transaction) and {@code schemaVersion} versions the
+     * payload shape for future evolution.
+     */
+    void append(UUID aggregateId, String eventType, Object payload, int schemaVersion);
+}

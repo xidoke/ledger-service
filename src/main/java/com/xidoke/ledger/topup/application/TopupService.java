@@ -10,6 +10,8 @@ import com.xidoke.ledger.common.domain.TransactionId;
 import com.xidoke.ledger.ledger.domain.Transaction;
 import com.xidoke.ledger.ledger.domain.TransactionRepository;
 import com.xidoke.ledger.ledger.domain.TransactionType;
+import com.xidoke.ledger.outbox.domain.OutboxRepository;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.Instant;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,17 +19,23 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Top-up use case: move money from outside into a user wallet as one balanced posting — {@code DEBIT SYSTEM_FUNDING /
  * CREDIT user} (ADR-0009). All writes (both account balances + the transaction + its entries) commit in a single
- * {@code @Transactional} (ADR-0006). No idempotency (M3) or concurrency retry (M4) yet.
+ * {@code @Transactional} (ADR-0006), and the {@code TopupPosted} outbox event is appended in that same transaction
+ * (ADR-0013). Idempotency and concurrency retry are applied by the outer layers (filter + controller), not here.
  */
 @Service
 public class TopupService {
 
     private final AccountRepository accounts;
     private final TransactionRepository transactions;
+    private final OutboxRepository outbox;
 
-    public TopupService(AccountRepository accounts, TransactionRepository transactions) {
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "Repositories are stateless Spring-managed singletons injected by the container")
+    public TopupService(AccountRepository accounts, TransactionRepository transactions, OutboxRepository outbox) {
         this.accounts = accounts;
         this.transactions = transactions;
+        this.outbox = outbox;
     }
 
     @Transactional
@@ -48,6 +56,11 @@ public class TopupService {
         accounts.save(funding);
         accounts.save(user);
         transactions.save(tx);
+        outbox.append(
+                txId.value(),
+                "TopupPosted",
+                new TopupPosted(txId.value(), accountId.value(), amount.minorUnits(), user.currencyCode(), now),
+                1);
 
         return new TopupResult(txId, user);
     }
