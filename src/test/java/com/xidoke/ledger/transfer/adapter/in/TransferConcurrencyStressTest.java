@@ -159,4 +159,59 @@ class TransferConcurrencyStressTest {
                 .as("funding CREDIT + one DEBIT per successful transfer")
                 .isEqualTo(ok + 1L);
     }
+
+    /**
+     * With bounded retry (ADR-0011, LDG-52), moderate contention is fully resolved: every transfer eventually wins its
+     * optimistic-lock race. M = 4 is below the default max-attempts (5), and the k-th committer needs at most k
+     * attempts (it can only lose to a distinct earlier committer), so all M succeed deterministically.
+     */
+    @Test
+    void moderateConcurrencyAllSucceedWithRetry() throws Exception {
+        final int m = 4;
+        UUID from = createAccount();
+        UUID to = createAccount();
+        long funding = m * AMOUNT;
+        mockMvc.perform(post("/accounts/{id}/topups", from)
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"amountMinorUnits\":%d}".formatted(funding)))
+                .andExpect(status().isCreated());
+
+        AtomicInteger ok = new AtomicInteger();
+        CountDownLatch start = new CountDownLatch(1);
+        CountDownLatch done = new CountDownLatch(m);
+        ExecutorService pool = Executors.newFixedThreadPool(m);
+        for (int i = 0; i < m; i++) {
+            pool.submit(() -> {
+                try {
+                    start.await();
+                    int code = mockMvc.perform(post("/transfers")
+                                    .header("Idempotency-Key", UUID.randomUUID().toString())
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content("{\"fromAccountId\":\"%s\",\"toAccountId\":\"%s\",\"amountMinorUnits\":%d}"
+                                            .formatted(from, to, AMOUNT)))
+                            .andReturn()
+                            .getResponse()
+                            .getStatus();
+                    if (code == 201) {
+                        ok.incrementAndGet();
+                    }
+                } catch (Exception ignored) {
+                    // a thrown request counts as a non-success; the assertion below would catch it
+                } finally {
+                    done.countDown();
+                }
+            });
+        }
+        start.countDown();
+        done.await();
+        pool.shutdownNow();
+
+        assertThat(ok.get())
+                .as("retry resolves moderate contention — all succeed")
+                .isEqualTo(m);
+        assertThat(balanceCache(from)).isZero();
+        assertThat(balanceCache(to)).isEqualTo(funding);
+        assertThat(balanceCache(from)).isEqualTo(ledgerBalance(from));
+    }
 }

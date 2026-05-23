@@ -1,5 +1,6 @@
 package com.xidoke.ledger.common.web;
 
+import com.xidoke.ledger.common.error.ConcurrencyConflictException;
 import com.xidoke.ledger.common.error.NotFoundException;
 import com.xidoke.ledger.common.error.UnprocessableEntityException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -31,8 +33,9 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
  *   <li>{@code 404} — {@link NotFoundException}: the target resource does not exist;
  *   <li>{@code 422} — {@link UnprocessableEntityException}: well-formed request, existing target, but a business rule
  *       forbids it (insufficient funds, self-transfer, currency mismatch);
- *   <li>{@code 409} — {@link IllegalStateException}: a conflict with current state (reserved also for optimistic-lock
- *       retry exhaustion in M4).
+ *   <li>{@code 409} — a conflict with current state: {@link IllegalStateException}, or a concurrency conflict
+ *       ({@link ConcurrencyConflictException} from exhausted optimistic-lock retry, ADR-0011; or a raw
+ *       {@link OptimisticLockingFailureException} that escaped retry).
  * </ul>
  */
 @RestControllerAdvice
@@ -82,6 +85,15 @@ public class ProblemDetailExceptionHandler extends ResponseEntityExceptionHandle
     ProblemDetail handleConflict(IllegalStateException ex, HttpServletRequest request) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Conflict");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        return problem;
+    }
+
+    @ExceptionHandler({ConcurrencyConflictException.class, OptimisticLockingFailureException.class})
+    ProblemDetail handleConcurrencyConflict(Exception ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT, "The request conflicted with a concurrent update; please retry");
+        problem.setTitle("Concurrency conflict");
         problem.setInstance(URI.create(request.getRequestURI()));
         return problem;
     }
