@@ -2,8 +2,10 @@ package com.xidoke.ledger.outbox.adapter.out;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xidoke.ledger.outbox.domain.OutboxRecord;
 import com.xidoke.ledger.outbox.domain.OutboxRepository;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -42,6 +44,27 @@ public class OutboxJdbcStore implements OutboxRepository {
                 .param("type", eventType)
                 .param("payload", json)
                 .param("ver", schemaVersion)
+                .update();
+    }
+
+    @Override
+    public List<OutboxRecord> fetchPendingBatch(int limit) {
+        return jdbc.sql("SELECT id, aggregate_id, event_type, payload, schema_version FROM outbox "
+                        + "WHERE status = 'PENDING' ORDER BY id LIMIT :limit FOR UPDATE SKIP LOCKED")
+                .param("limit", limit)
+                .query((rs, rowNum) -> new OutboxRecord(
+                        rs.getLong("id"),
+                        rs.getObject("aggregate_id", UUID.class),
+                        rs.getString("event_type"),
+                        rs.getString("payload"),
+                        rs.getInt("schema_version")))
+                .list();
+    }
+
+    @Override
+    public void markSent(long id) {
+        jdbc.sql("UPDATE outbox SET status = 'SENT', published_at = now() WHERE id = :id")
+                .param("id", id)
                 .update();
     }
 }
