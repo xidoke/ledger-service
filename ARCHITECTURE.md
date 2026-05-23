@@ -8,10 +8,13 @@ per-subsystem deep dives see `docs/architecture/`.
 Read this when you are about to make a change and need to know which module owns
 the behaviour you are touching.
 
-> **Status**: Phase 0 (skeleton). Feature packages are scaffolded empty; the only
-> live code is the smoke endpoint and a permit-all security skeleton. Module
-> responsibilities below describe the **intended** Phase 1 shape so the map is
-> stable before the code lands. Sections marked _(Phase 1)_ are not implemented yet.
+> **Status**: Phase 1 in progress. The core ledger is live — `account/`, `topup/`,
+> `transfer/`, `ledger/`, and `idempotency/` carry real code (double-entry posting,
+> balance-cache, top-up + transfer endpoints, the Idempotency-Key filter), all
+> structured hexagonally (ADR-0018). Still **pending**: optimistic-lock concurrency
+> (M4) and the transactional outbox + reconciliation job (M5) — sections below marked
+> _(pending — Mn)_ are not implemented yet. A richer C4 diagram + per-subsystem deep
+> dives are tracked in LDG-59.
 
 ## Overview
 
@@ -58,26 +61,33 @@ flowchart LR
 
 Application code lives under `src/main/java/com/xidoke/ledger/`, organised
 **package-by-feature** (ADR-0004): each package is a bounded context, not a
-technical layer. Names below are written out in full so they stay grep-able —
-follow the name, not a hyperlink.
+technical layer. Inside each feature it is structured **hexagonally** (ADR-0018):
+`domain/` (pure Java — aggregates, value objects, the repository **port**), `adapter/in`
+(REST controller), `adapter/out` (JPA/JdbcClient implementation of the port). Names below
+are written out in full so they stay grep-able — follow the name, not a hyperlink.
 
-|    Package     |                                                    Responsibility                                                    | Phase |
-|----------------|----------------------------------------------------------------------------------------------------------------------|-------|
-| `account/`     | Account entity, repository, service, controller. Owns balance cache and the `version` column for optimistic locking. | 1     |
-| `transfer/`    | Transfer use case — orchestrates a two-leg posting between two accounts.                                             | 1     |
-| `topup/`       | Top-up use case — credits an account against the `SYSTEM_FUNDING` counterpart.                                       | 1     |
-| `ledger/`      | `LedgerEntry` (append-only), the double-entry posting primitive, and the reconciliation job.                         | 1     |
-| `idempotency/` | Idempotency-key storage and the dedup check that guards mutating endpoints.                                          | 1     |
-| `outbox/`      | Transactional outbox: event rows written in the posting transaction, polled and published.                           | 1     |
-| `common/`      | Cross-cutting only — Spring config, security, web error handling, logging setup.                                     | 0/1   |
+|    Package     |                                                            Responsibility                                                             |      Status      |
+|----------------|---------------------------------------------------------------------------------------------------------------------------------------|------------------|
+| `account/`     | `Account` aggregate (balance cache, status, `version`), `debit`/`credit` enforcing ACTIVE + no-overdraw; CRUD endpoints.              | live             |
+| `topup/`       | Top-up use case — credits a user account against the `SYSTEM_FUNDING` counterpart, one balanced posting.                              | live             |
+| `transfer/`    | Transfer use case — orchestrates a two-leg `DEBIT from / CREDIT to` posting between two user accounts.                                | live             |
+| `ledger/`      | `Transaction` aggregate — the double-entry posting where `Σ DEBIT == Σ CREDIT` is enforced (`post()`). Reconciliation job is pending. | live (recon: M5) |
+| `idempotency/` | `Idempotency-Key` filter + `idempotency_keys` store: claim-first dedup guarding the money endpoints.                                  | live             |
+| `outbox/`      | Transactional outbox: event rows written in the posting transaction, polled and published.                                            | pending — M5     |
+| `common/`      | Cross-cutting + the shared domain kernel — see below.                                                                                 | live             |
 
-Within `common/` today:
+`LedgerEntry` is **not** in `ledger/`: it is an immutable shared fact in `common/domain`
+(shared kernel, ADR-0019), emitted by `Account.debit/credit` and collected by `Transaction`.
 
-- `common/web/` — `HelloController`, the health-style smoke endpoint (`GET /hello`).
+Within `common/`:
+
+- `common/domain/` — shared kernel: `Money`, `AccountId`, `TransactionId`, `Direction`, the immutable `LedgerEntry`.
+- `common/web/` — `CorrelationIdFilter` (MDC correlation id), `ProblemDetailExceptionHandler` (RFC 7807), `HelloController` smoke endpoint.
+- `common/error/` — framework-free base exceptions (`NotFoundException` → 404, `UnprocessableEntityException` → 422) so domain code maps to HTTP without importing Spring.
 - `common/security/` — `SecurityConfig`, a permit-all skeleton; real auth is deferred to Phase 3+.
 
 Schema migrations live in `src/main/resources/db/migration/` as Flyway
-`V<n>__description.sql` files (Phase 1 onward).
+`V<n>__description.sql` files (V1 baseline → V7 idempotency in-flight so far).
 
 ## Invariants
 
@@ -96,9 +106,10 @@ across the codebase; breaking one is a bug even if the code compiles.
 - **Money is `BIGINT` minor units, never `float`/`double`.** All amounts are
   integer minor units (e.g. cents) in both Java (`long`) and PostgreSQL
   (`BIGINT`). (ADR-0007)
-- **Cross-module access goes through the service layer.** A feature package
-  never imports another feature's repository directly — e.g. `transfer/` reads
-  account state via `AccountService`, not `AccountRepository`. (ADR-0004)
+- **Cross-module access goes through the core feature's domain port.** A use-case
+  feature reaches a core aggregate only via its public port — e.g. `transfer/` loads
+  accounts through the `AccountRepository` port, never another feature's `adapter/out`
+  internals. ArchUnit enforces use-case → core (and forbids the reverse). (ADR-0004, ADR-0019)
 - **`common/` never imports a feature package.** Dependencies point inward to
   `common/`, never outward. (ADR-0004)
 
@@ -110,33 +121,34 @@ transaction:
 
 ```
 HTTP request
+  → IdempotencyFilter (idempotency/) — claims the key up front; replays or 409s a duplicate
   → controller (feature package, e.g. transfer/)
-  → idempotency check (idempotency/) — short-circuits a replay
-  → use-case service orchestrates:
-        ledger/ posts the double-entry pair
+  → use-case service orchestrates, in one @Transactional:
+        ledger/  posts the double-entry pair (Transaction.post enforces Σ DEBIT == Σ CREDIT)
         account/ updates the balance cache (+ version bump)
-        outbox/ appends the domain event row
+        outbox/  appends the domain event row   (pending — M5)
   → single ACID commit  →  PostgreSQL
 ```
 
-Because the outbox row is written in the same transaction as the ledger entries,
-there is no dual-write problem: either everything commits or nothing does. A
-separate poller _(Phase 1)_ reads the outbox and publishes downstream.
+The idempotency check runs in a servlet filter *before* the controller (claim-first via
+`INSERT … ON CONFLICT`, committed separately so concurrent requests can see it). The
+ledger entries + balance cache commit in one ACID transaction (ADR-0006). The outbox row
+_(pending — M5)_ will be written in that same transaction so there is no dual-write
+problem; a separate poller then publishes downstream.
 
 ## Cross-cutting concerns
 
-- **Concurrency** — Optimistic locking via a `version` column on `accounts`;
-  conflicting writers retry. Chosen over pessimistic locking to keep hot-account
-  contention manageable. (ADR-0011, _Phase 1_)
-- **Idempotency** — Mutating endpoints accept an idempotency key; the
-  `idempotency/` package records it and short-circuits replays before any
-  mutation. _(Phase 1)_
-- **Observability** — Structured logging with a propagated correlation ID;
-  Actuator health groups under `/actuator/health`. _(Phase 0 wiring → Phase 1 expand)_
-- **Error handling** — A global exception handler maps domain exceptions to
-  RFC 7807 problem responses. _(Phase 1)_
-- **Security** — `common/security/SecurityConfig` is a permit-all skeleton in
-  Phase 0; real authentication arrives in Phase 3+.
+- **Idempotency** — The money endpoints (`/transfers`, `/accounts/*/topups`) require an
+  `Idempotency-Key`; `IdempotencyFilter` claims it (PENDING row), replays a completed
+  duplicate, 409s an in-flight one, and 422s a key reused with a different body. (ADR-0012) ✅
+- **Error handling** — `ProblemDetailExceptionHandler` maps domain exceptions to RFC 7807
+  responses; status taxonomy 400 / 404 / 409 / 422. ✅
+- **Observability** — Structured ECS-JSON logging with a propagated correlation id (MDC);
+  Actuator `health`/`info`/`metrics`. (ADR-0017) ✅
+- **Concurrency** — Optimistic locking via the `version` column on `accounts` with retry;
+  chosen over pessimistic to keep hot-account contention manageable. (ADR-0011) _(pending — M4)_
+- **Security** — `common/security/SecurityConfig` is a permit-all skeleton; real
+  authentication arrives in Phase 3+.
 
 ## Key decisions
 
@@ -149,9 +161,16 @@ The foundational decisions, with the full reasoning in `docs/adr/`:
 - [ADR-0005](docs/adr/0005-ledger-model.md) — Double-entry, append-only ledger entries.
 - [ADR-0006](docs/adr/0006-balance-representation.md) — Balance cached in the same DB transaction as entries.
 - [ADR-0007](docs/adr/0007-money-representation.md) — `BIGINT` integer minor units.
+- [ADR-0009](docs/adr/0009-system-funding-account.md) — `SYSTEM_FUNDING` counterpart so top-ups stay balanced.
+- [ADR-0010](docs/adr/0010-aggregate-boundary.md) — Account-per-aggregate (the locking boundary).
+- [ADR-0012](docs/adr/0012-idempotency.md) — `Idempotency-Key` + claim-first in-flight handling.
+- [ADR-0017](docs/adr/0017-observability.md) — Structured JSON log + MDC correlation id + Actuator.
+- [ADR-0018](docs/adr/0018-hexagonal-architecture.md) — Hexagonal (Ports & Adapters) inside each module.
+- [ADR-0019](docs/adr/0019-ddd-tactical-patterns.md) — DDD tactical; `LedgerEntry` as a shared fact.
+- [ADR-0031](docs/adr/0031-identifier-strategy.md) — UUID app-generated ids.
 
-See [docs/adr/README.md](docs/adr/README.md) for the full catalog and the
-records that land in Phase 1 (ADR-0008 onward).
+See [docs/adr/README.md](docs/adr/README.md) for the full catalog and the records still
+pending distillation (0011, 0013–0016).
 
 ## Where to look next
 
