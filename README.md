@@ -157,6 +157,7 @@ Architecture decision records live in [docs/adr/](docs/adr/) (see the catalog th
 A layered skim path — start at the top, go deeper as the need arises:
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — where to make a change: module map, invariants, data flow.
+- [docs/architecture/](docs/architecture/) — per-subsystem deep dives: data model, posting flow, outbox flow, concurrency model.
 - [docs/adr/](docs/adr/) — Architecture Decision Records (MADR; see the catalog — Phase 1 ADRs land as decisions land).
 - [docs/api/](docs/api/) — OpenAPI 3 spec (`openapi.yaml`, SpringDoc); Swagger UI at `/swagger-ui.html` when running.
 - [docs/glossary.md](docs/glossary.md) — domain vocabulary: the ubiquitous language and canonical term names.

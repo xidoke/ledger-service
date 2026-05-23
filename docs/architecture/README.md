@@ -2,15 +2,14 @@
 
 Per-subsystem architecture documentation expanding on the root [`ARCHITECTURE.md`](../../ARCHITECTURE.md) country-map. Includes C4 diagrams (Context / Container / Component) and prose explanations of cross-cutting flows.
 
-**Diátaxis**: Explanation. **Status**: scaffold; Phase 1 fills as domain code lands. Phase 0 leaves root `ARCHITECTURE.md` as a high-level stub (LDG-31).
+**Diátaxis**: Explanation. The root [`ARCHITECTURE.md`](../../ARCHITECTURE.md) carries the C4 *Container* view; these files are the *Component*/flow deep dives.
 
-## Planned content (Phase 1)
+## Contents
 
-- `data-model.md` — Account / Transaction / LedgerEntry entities + invariants
-- `posting-flow.md` — transfer/topup sequence diagrams
-- `outbox-flow.md` — event publishing path + reconciliation
-- `concurrency-model.md` — optimistic locking + retry decision rationale
-- C4 diagrams — Mermaid or Structurizr source files
+- [`data-model.md`](data-model.md) — Account / Transaction / LedgerEntry entities + invariants
+- [`posting-flow.md`](posting-flow.md) — transfer/top-up posting sequence (idempotency → @Transactional → outbox)
+- [`outbox-flow.md`](outbox-flow.md) — event publishing path (write → poll → idempotent consume) + reconciliation
+- [`concurrency-model.md`](concurrency-model.md) — optimistic locking + retry, with the benchmark numbers
 
 ## Convention
 
