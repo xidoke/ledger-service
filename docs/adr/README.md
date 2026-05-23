@@ -21,6 +21,7 @@ Captures architectural decisions — **what** was decided, **when**, and **why**
 | [0011](0011-concurrency-strategy.md)    | Optimistic locking (`@Version`) + bounded retry; pessimistic benchmarked               | Accepted |
 | [0012](0012-idempotency.md)             | `Idempotency-Key` header + `idempotency_keys` table (claim-first in-flight)            | Accepted |
 | [0013](0013-event-publishing.md)        | Transactional outbox (same-tx event write; polling poller)                             | Accepted |
+| [0014](0014-pii-handling.md)            | PII handling — forgettable payload (PII off the append-only log)                       | Accepted |
 | [0015](0015-event-schema-versioning.md) | Event schema versioning — explicit `schema_version` + tolerant reader                  | Accepted |
 | [0016](0016-reconciliation.md)          | Periodic reconciliation job (cache vs ledger drift; alert-only)                        | Accepted |
 | [0017](0017-observability.md)           | Structured JSON log + MDC correlation id + Spring Actuator                             | Accepted |
@@ -28,9 +29,9 @@ Captures architectural decisions — **what** was decided, **when**, and **why**
 | [0019](0019-ddd-tactical-patterns.md)   | DDD tactical patterns; LedgerEntry as a shared immutable fact                          | Accepted |
 | [0031](0031-identifier-strategy.md)     | UUID app-generated ids (distributed-ready; v4 → v7)                                    | Accepted |
 
-The remaining Phase-1 ADRs land as their code lands: PII handling (0014) — still in the vault, with a write-issue at its milestone. The deferred Phase-B decisions (0020–0030: resilience, rate-limiting, caching, gateway, saga, DLQ, inbox, deployment, ACL, strangler-fig) stay vault-only until there is code to record.
+All Phase-1 ADRs (0001–0019, 0031) are now distilled. The deferred Phase-B decisions (0020–0030: resilience, rate-limiting, caching, gateway, saga, DLQ, inbox, deployment, ACL, strangler-fig) stay vault-only until there is code to record.
 
-> **Numbering note**: ADR numbers track the vault decision log (`Research/ledger-system-ADR/wiki/adr-NNN-*`), not repo creation order, so each repo ADR keeps the same number as its source analysis. A decision is distilled here when its code lands — hence numbers may be non-contiguous (e.g. 0014 is not yet distilled while 0011/0012/0013/0015/0016/0017/0018/0019 are). Numbers are never reused.
+> **Numbering note**: ADR numbers track the vault decision log (`Research/ledger-system-ADR/wiki/adr-NNN-*`), not repo creation order, so each repo ADR keeps the same number as its source analysis. A decision is distilled here when its code lands; the Phase-1 set (0001–0019, 0031) is complete, and the Phase-B numbers (0020–0030) remain vault-only until their code lands. Numbers are never reused.
 
 ## Convention
 
