@@ -59,6 +59,7 @@ class TopupEndpointTest {
         long fundingBefore = balanceOf(SYSTEM_FUNDING);
 
         String json = mockMvc.perform(post("/accounts/{id}/topups", accountId)
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"amountMinorUnits\":1000}"))
                 .andExpect(status().isCreated())
@@ -97,6 +98,7 @@ class TopupEndpointTest {
     @Test
     void topupUnknownAccountReturns404() throws Exception {
         mockMvc.perform(post("/accounts/{id}/topups", UUID.randomUUID())
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"amountMinorUnits\":1000}"))
                 .andExpect(status().isNotFound())
@@ -107,6 +109,7 @@ class TopupEndpointTest {
     void topupNonPositiveAmountReturns400() throws Exception {
         UUID accountId = createAccount("USD");
         mockMvc.perform(post("/accounts/{id}/topups", accountId)
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"amountMinorUnits\":0}"))
                 .andExpect(status().isBadRequest());

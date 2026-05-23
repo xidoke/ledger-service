@@ -50,6 +50,7 @@ class TransferEndpointTest {
 
     private void topup(UUID accountId, long amount) throws Exception {
         mockMvc.perform(post("/accounts/{id}/topups", accountId)
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"amountMinorUnits\":%d}".formatted(amount)))
                 .andExpect(status().isCreated());
@@ -76,6 +77,7 @@ class TransferEndpointTest {
         topup(from, 1000);
 
         String json = mockMvc.perform(post("/transfers")
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fromAccountId\":\"%s\",\"toAccountId\":\"%s\",\"amountMinorUnits\":300}"
                                 .formatted(from, to)))
@@ -120,6 +122,7 @@ class TransferEndpointTest {
         long toEntriesBefore = entryCount(to);
 
         mockMvc.perform(post("/transfers")
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fromAccountId\":\"%s\",\"toAccountId\":\"%s\",\"amountMinorUnits\":101}"
                                 .formatted(from, to)))
@@ -139,6 +142,7 @@ class TransferEndpointTest {
         topup(account, 500);
 
         mockMvc.perform(post("/transfers")
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fromAccountId\":\"%s\",\"toAccountId\":\"%s\",\"amountMinorUnits\":100}"
                                 .formatted(account, account)))
@@ -154,6 +158,7 @@ class TransferEndpointTest {
         topup(from, 1000);
 
         mockMvc.perform(post("/transfers")
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fromAccountId\":\"%s\",\"toAccountId\":\"%s\",\"amountMinorUnits\":100}"
                                 .formatted(from, to)))
@@ -166,6 +171,7 @@ class TransferEndpointTest {
         UUID to = createAccount("USD");
 
         mockMvc.perform(post("/transfers")
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fromAccountId\":\"%s\",\"toAccountId\":\"%s\",\"amountMinorUnits\":100}"
                                 .formatted(UUID.randomUUID(), to)))
@@ -178,6 +184,7 @@ class TransferEndpointTest {
         UUID to = createAccount("USD");
 
         mockMvc.perform(post("/transfers")
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fromAccountId\":\"%s\",\"toAccountId\":\"%s\",\"amountMinorUnits\":0}"
                                 .formatted(from, to)))

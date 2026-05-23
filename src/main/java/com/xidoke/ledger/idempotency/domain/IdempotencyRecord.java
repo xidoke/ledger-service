@@ -1,10 +1,17 @@
 package com.xidoke.ledger.idempotency.domain;
 
 import java.time.Instant;
+import org.jspecify.annotations.Nullable;
 
 /**
- * A stored idempotency outcome: the client-supplied {@code key}, the {@code requestHash} that produced it, and the
- * captured response (status + body) to replay on a retry with the same key. Immutable (ADR-0012).
+ * A stored idempotency outcome (ADR-0012): the client-supplied {@code key}, the {@code requestHash} that claimed it,
+ * its {@code status}, and — once {@code COMPLETED} — the captured response (status + body) to replay. While
+ * {@code PENDING} the response fields are {@code null}.
  */
 public record IdempotencyRecord(
-        String key, String requestHash, int responseStatus, String responseBody, Instant createdAt) {}
+        String key,
+        String requestHash,
+        IdempotencyStatus status,
+        @Nullable Integer responseStatus,
+        @Nullable String responseBody,
+        Instant createdAt) {}
