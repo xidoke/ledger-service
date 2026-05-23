@@ -41,6 +41,13 @@
 			<artifactId>jspecify</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<!-- OpenAPI 3 spec + Swagger UI (LDG-70). 2.8.17 targets Spring Boot 3.5.x; 2.8.16 had a 3.5 startup
+		     regression (springdoc #3288), so do not downgrade below 2.8.17. -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.8.17</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
