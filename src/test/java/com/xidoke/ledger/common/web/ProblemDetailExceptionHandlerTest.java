@@ -7,11 +7,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.xidoke.ledger.common.security.SecurityConfig;
+import com.xidoke.ledger.idempotency.adapter.in.IdempotencyFilter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,7 +22,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-@WebMvcTest(controllers = ProblemDetailExceptionHandlerTest.SampleController.class)
+// Exclude IdempotencyFilter from this slice: @WebMvcTest auto-scans Filter beans, but that filter needs an
+// IdempotencyStore (a JdbcClient @Repository) which a web slice doesn't provide. This test only exercises the advice.
+@WebMvcTest(
+        controllers = ProblemDetailExceptionHandlerTest.SampleController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = IdempotencyFilter.class))
 @Import({
     ProblemDetailExceptionHandlerTest.SampleController.class,
     ProblemDetailExceptionHandler.class,
