@@ -169,6 +169,7 @@ The foundational decisions, with the full reasoning in `docs/adr/`:
 - [ADR-0011](docs/adr/0011-concurrency-strategy.md) — Optimistic locking + bounded retry (pessimistic benchmarked).
 - [ADR-0012](docs/adr/0012-idempotency.md) — `Idempotency-Key` + claim-first in-flight handling.
 - [ADR-0013](docs/adr/0013-event-publishing.md) — Transactional outbox (same-tx event write; polling poller).
+- [ADR-0015](docs/adr/0015-event-schema-versioning.md) — Event schema versioning (explicit `schema_version` + tolerant reader).
 - [ADR-0016](docs/adr/0016-reconciliation.md) — Periodic reconciliation drift job (cache vs ledger; alert-only).
 - [ADR-0017](docs/adr/0017-observability.md) — Structured JSON log + MDC correlation id + Actuator.
 - [ADR-0018](docs/adr/0018-hexagonal-architecture.md) — Hexagonal (Ports & Adapters) inside each module.

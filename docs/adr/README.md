@@ -6,30 +6,31 @@ Captures architectural decisions — **what** was decided, **when**, and **why**
 
 ## Catalog
 
-|                  ADR                   |                                         Title                                          |  Status  |
-|----------------------------------------|----------------------------------------------------------------------------------------|----------|
-| [0001](0001-architectural-style.md)    | Modular monolith + double-entry append-only on PostgreSQL, **not** full event sourcing | Accepted |
-| [0002](0002-language-framework.md)     | Java 21 + Spring Boot 3                                                                | Accepted |
-| [0003](0003-database.md)               | PostgreSQL                                                                             | Accepted |
-| [0004](0004-package-structure.md)      | Package-by-feature                                                                     | Accepted |
-| [0005](0005-ledger-model.md)           | Double-entry, append-only ledger entries                                               | Accepted |
-| [0006](0006-balance-representation.md) | Balance cached in the same DB transaction as ledger entries                            | Accepted |
-| [0007](0007-money-representation.md)   | BIGINT integer minor units                                                             | Accepted |
-| [0008](0008-currency-scope.md)         | Single currency at Phase 0-1 (defer multi-currency + FX)                               | Accepted |
-| [0009](0009-system-funding-account.md) | SYSTEM_FUNDING counterpart so top-ups stay balanced                                    | Accepted |
-| [0010](0010-aggregate-boundary.md)     | Account-per-aggregate (Account is the locking boundary)                                | Accepted |
-| [0011](0011-concurrency-strategy.md)   | Optimistic locking (`@Version`) + bounded retry; pessimistic benchmarked               | Accepted |
-| [0012](0012-idempotency.md)            | `Idempotency-Key` header + `idempotency_keys` table (claim-first in-flight)            | Accepted |
-| [0013](0013-event-publishing.md)       | Transactional outbox (same-tx event write; polling poller)                             | Accepted |
-| [0016](0016-reconciliation.md)         | Periodic reconciliation job (cache vs ledger drift; alert-only)                        | Accepted |
-| [0017](0017-observability.md)          | Structured JSON log + MDC correlation id + Spring Actuator                             | Accepted |
-| [0018](0018-hexagonal-architecture.md) | Hexagonal (Ports & Adapters) inside each module                                        | Accepted |
-| [0019](0019-ddd-tactical-patterns.md)  | DDD tactical patterns; LedgerEntry as a shared immutable fact                          | Accepted |
-| [0031](0031-identifier-strategy.md)    | UUID app-generated ids (distributed-ready; v4 → v7)                                    | Accepted |
+|                   ADR                   |                                         Title                                          |  Status  |
+|-----------------------------------------|----------------------------------------------------------------------------------------|----------|
+| [0001](0001-architectural-style.md)     | Modular monolith + double-entry append-only on PostgreSQL, **not** full event sourcing | Accepted |
+| [0002](0002-language-framework.md)      | Java 21 + Spring Boot 3                                                                | Accepted |
+| [0003](0003-database.md)                | PostgreSQL                                                                             | Accepted |
+| [0004](0004-package-structure.md)       | Package-by-feature                                                                     | Accepted |
+| [0005](0005-ledger-model.md)            | Double-entry, append-only ledger entries                                               | Accepted |
+| [0006](0006-balance-representation.md)  | Balance cached in the same DB transaction as ledger entries                            | Accepted |
+| [0007](0007-money-representation.md)    | BIGINT integer minor units                                                             | Accepted |
+| [0008](0008-currency-scope.md)          | Single currency at Phase 0-1 (defer multi-currency + FX)                               | Accepted |
+| [0009](0009-system-funding-account.md)  | SYSTEM_FUNDING counterpart so top-ups stay balanced                                    | Accepted |
+| [0010](0010-aggregate-boundary.md)      | Account-per-aggregate (Account is the locking boundary)                                | Accepted |
+| [0011](0011-concurrency-strategy.md)    | Optimistic locking (`@Version`) + bounded retry; pessimistic benchmarked               | Accepted |
+| [0012](0012-idempotency.md)             | `Idempotency-Key` header + `idempotency_keys` table (claim-first in-flight)            | Accepted |
+| [0013](0013-event-publishing.md)        | Transactional outbox (same-tx event write; polling poller)                             | Accepted |
+| [0015](0015-event-schema-versioning.md) | Event schema versioning — explicit `schema_version` + tolerant reader                  | Accepted |
+| [0016](0016-reconciliation.md)          | Periodic reconciliation job (cache vs ledger drift; alert-only)                        | Accepted |
+| [0017](0017-observability.md)           | Structured JSON log + MDC correlation id + Spring Actuator                             | Accepted |
+| [0018](0018-hexagonal-architecture.md)  | Hexagonal (Ports & Adapters) inside each module                                        | Accepted |
+| [0019](0019-ddd-tactical-patterns.md)   | DDD tactical patterns; LedgerEntry as a shared immutable fact                          | Accepted |
+| [0031](0031-identifier-strategy.md)     | UUID app-generated ids (distributed-ready; v4 → v7)                                    | Accepted |
 
-The remaining Phase-1 ADRs land as their code lands: PII handling (0014), event schema versioning (0015) — still in the vault, each with a write-issue at its milestone. The deferred Phase-B decisions (0020–0030: resilience, rate-limiting, caching, gateway, saga, DLQ, inbox, deployment, ACL, strangler-fig) stay vault-only until there is code to record.
+The remaining Phase-1 ADRs land as their code lands: PII handling (0014) — still in the vault, with a write-issue at its milestone. The deferred Phase-B decisions (0020–0030: resilience, rate-limiting, caching, gateway, saga, DLQ, inbox, deployment, ACL, strangler-fig) stay vault-only until there is code to record.
 
-> **Numbering note**: ADR numbers track the vault decision log (`Research/ledger-system-ADR/wiki/adr-NNN-*`), not repo creation order, so each repo ADR keeps the same number as its source analysis. A decision is distilled here when its code lands — hence numbers may be non-contiguous (e.g. 0014–0015 are not yet distilled while 0011/0012/0013/0016/0017/0018/0019 are). Numbers are never reused.
+> **Numbering note**: ADR numbers track the vault decision log (`Research/ledger-system-ADR/wiki/adr-NNN-*`), not repo creation order, so each repo ADR keeps the same number as its source analysis. A decision is distilled here when its code lands — hence numbers may be non-contiguous (e.g. 0014 is not yet distilled while 0011/0012/0013/0015/0016/0017/0018/0019 are). Numbers are never reused.
 
 ## Convention
 
