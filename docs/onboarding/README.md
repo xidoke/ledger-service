@@ -2,14 +2,14 @@
 
 First-day-to-first-PR walkthrough. Goes beyond the [README Quickstart](../../README.md#quickstart) (which is happy-path only) by covering edge cases, environment debugging, and team conventions.
 
-**Diátaxis**: Tutorial (learning by doing — beginner state). **Status**: scaffold; Phase 1 fills as the project shapes up.
+**Diátaxis**: Tutorial (learning by doing — beginner state). **Status**: filled (LDG-71). Read in order:
 
-## Planned content (Phase 1)
+## Contents
 
-- `00-prerequisites.md` — JDK 21 install, Docker setup, IDE choice
-- `01-first-run.md` — clone → `docker compose up` → verify `/hello`
-- `02-first-pr.md` — branch, commit format, run tests, open PR
-- `03-troubleshooting.md` — common errors + fixes
+1. [`00-prerequisites.md`](00-prerequisites.md) — JDK 21, Docker, IDE choice
+2. [`01-first-run.md`](01-first-run.md) — clone → boot → create an account → top-up → see entries
+3. [`02-first-pr.md`](02-first-pr.md) — branch, verify, commit format, open PR
+4. [`03-troubleshooting.md`](03-troubleshooting.md) — common first-run errors + fixes
 
 ## Convention
 
