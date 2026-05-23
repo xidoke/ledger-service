@@ -11,10 +11,10 @@ the behaviour you are touching.
 > **Status**: Phase 1 in progress. The core ledger is live — `account/`, `topup/`,
 > `transfer/`, `ledger/`, and `idempotency/` carry real code (double-entry posting,
 > balance-cache, top-up + transfer endpoints, the Idempotency-Key filter), all
-> structured hexagonally (ADR-0018). Still **pending**: optimistic-lock concurrency
-> (M4) and the transactional outbox + reconciliation job (M5) — sections below marked
-> _(pending — Mn)_ are not implemented yet. A richer C4 diagram + per-subsystem deep
-> dives are tracked in LDG-59.
+> structured hexagonally (ADR-0018). Optimistic-lock concurrency with bounded retry is
+> now live (M4). Still **pending**: the transactional outbox + reconciliation job (M5) —
+> sections below marked _(pending — Mn)_ are not implemented yet. A richer C4 diagram +
+> per-subsystem deep dives are tracked in LDG-59.
 
 ## Overview
 
@@ -145,8 +145,9 @@ problem; a separate poller then publishes downstream.
   responses; status taxonomy 400 / 404 / 409 / 422. ✅
 - **Observability** — Structured ECS-JSON logging with a propagated correlation id (MDC);
   Actuator `health`/`info`/`metrics`. (ADR-0017) ✅
-- **Concurrency** — Optimistic locking via the `version` column on `accounts` with retry;
-  chosen over pessimistic to keep hot-account contention manageable. (ADR-0011) _(pending — M4)_
+- **Concurrency** — Optimistic locking via the `version` column on `accounts` + bounded retry
+  (capped backoff + jitter); chosen for the read-heavy profile (reads never block), benchmarked
+  vs pessimistic `FOR UPDATE`. (ADR-0011) ✅
 - **Security** — `common/security/SecurityConfig` is a permit-all skeleton; real
   authentication arrives in Phase 3+.
 
@@ -163,6 +164,7 @@ The foundational decisions, with the full reasoning in `docs/adr/`:
 - [ADR-0007](docs/adr/0007-money-representation.md) — `BIGINT` integer minor units.
 - [ADR-0009](docs/adr/0009-system-funding-account.md) — `SYSTEM_FUNDING` counterpart so top-ups stay balanced.
 - [ADR-0010](docs/adr/0010-aggregate-boundary.md) — Account-per-aggregate (the locking boundary).
+- [ADR-0011](docs/adr/0011-concurrency-strategy.md) — Optimistic locking + bounded retry (pessimistic benchmarked).
 - [ADR-0012](docs/adr/0012-idempotency.md) — `Idempotency-Key` + claim-first in-flight handling.
 - [ADR-0017](docs/adr/0017-observability.md) — Structured JSON log + MDC correlation id + Actuator.
 - [ADR-0018](docs/adr/0018-hexagonal-architecture.md) — Hexagonal (Ports & Adapters) inside each module.

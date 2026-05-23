@@ -70,7 +70,7 @@ Hiện thực: `idempotency/` (filter `OncePerRequestFilter` + `IdempotencyJdbcS
 
 ## References
 
-- [ADR-0011](0011-concurrency-strategy.md) — optimistic-lock retry dùng cùng key (chưa distilled — LDG-53)
+- [ADR-0011](0011-concurrency-strategy.md) — optimistic-lock retry dùng cùng key
 - [ADR-0006](0006-balance-representation.md) — balance cache commit cùng transaction với entries
 - [ADR-0018](0018-hexagonal-architecture.md) — error→HTTP status taxonomy; idempotency là infra pragmatic exception
 - Source analysis: `Research/ledger-system-ADR/wiki/adr-012-idempotency.md`; pattern: `Research/concurrent-api-design/wiki/idempotency-keys-stripe-pattern.md`
