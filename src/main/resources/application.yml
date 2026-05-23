@@ -25,6 +25,14 @@ spring:
     enabled: true
     locations: classpath:db/migration
 
+# Bounded retry for optimistic-lock conflicts on money writes (ADR-0011). Capped attempts +
+# exponential backoff with full jitter; exhaustion → HTTP 409. Tune per contention profile.
+ledger:
+  retry:
+    max-attempts: 5
+    base-backoff-millis: 25
+    max-backoff-millis: 200
+
 # Console logs are emitted as ECS JSON (one JSON object per line); MDC entries
 # such as correlationId become top-level fields. Spring Boot 3.4+ native — no
 # logback-spring.xml or logstash encoder needed.

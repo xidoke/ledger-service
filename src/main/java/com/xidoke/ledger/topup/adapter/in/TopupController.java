@@ -1,5 +1,6 @@
 package com.xidoke.ledger.topup.adapter.in;
 
+import com.xidoke.ledger.common.concurrency.OptimisticRetry;
 import com.xidoke.ledger.common.domain.AccountId;
 import com.xidoke.ledger.topup.application.TopupResult;
 import com.xidoke.ledger.topup.application.TopupService;
@@ -19,14 +20,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class TopupController {
 
     private final TopupService topupService;
+    private final OptimisticRetry retry;
 
-    public TopupController(TopupService topupService) {
+    public TopupController(TopupService topupService, OptimisticRetry retry) {
         this.topupService = topupService;
+        this.retry = retry;
     }
 
     @PostMapping
     ResponseEntity<TopupResponse> topup(@PathVariable UUID id, @Valid @RequestBody TopupRequest request) {
-        TopupResult result = topupService.topup(AccountId.of(id), request.amountMinorUnits());
+        // SYSTEM_FUNDING is debited by every top-up, so concurrent top-ups contend on one row — retry on conflict
+        // (ADR-0011); each attempt reloads at the current version. Exhaustion → 409.
+        TopupResult result = retry.execute(() -> topupService.topup(AccountId.of(id), request.amountMinorUnits()));
         TopupResponse body = TopupResponse.from(result);
         return ResponseEntity.created(URI.create("/transactions/" + body.transactionId()))
                 .body(body);
