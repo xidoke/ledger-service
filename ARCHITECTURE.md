@@ -12,7 +12,8 @@ the behaviour you are touching.
 > `transfer/`, `ledger/`, and `idempotency/` carry real code (double-entry posting,
 > balance-cache, top-up + transfer endpoints, the Idempotency-Key filter), all
 > structured hexagonally (ADR-0018). Optimistic-lock concurrency with bounded retry is
-> now live (M4). Still **pending**: the transactional outbox + reconciliation job (M5) —
+> now live (M4), and the transactional-outbox write side (events committed with the
+> posting, ADR-0013). Still **pending**: the outbox poller + reconciliation job (M5) —
 > sections below marked _(pending — Mn)_ are not implemented yet. A richer C4 diagram +
 > per-subsystem deep dives are tracked in LDG-59.
 
@@ -66,15 +67,15 @@ technical layer. Inside each feature it is structured **hexagonally** (ADR-0018)
 (REST controller), `adapter/out` (JPA/JdbcClient implementation of the port). Names below
 are written out in full so they stay grep-able — follow the name, not a hyperlink.
 
-|    Package     |                                                            Responsibility                                                             |      Status      |
-|----------------|---------------------------------------------------------------------------------------------------------------------------------------|------------------|
-| `account/`     | `Account` aggregate (balance cache, status, `version`), `debit`/`credit` enforcing ACTIVE + no-overdraw; CRUD endpoints.              | live             |
-| `topup/`       | Top-up use case — credits a user account against the `SYSTEM_FUNDING` counterpart, one balanced posting.                              | live             |
-| `transfer/`    | Transfer use case — orchestrates a two-leg `DEBIT from / CREDIT to` posting between two user accounts.                                | live             |
-| `ledger/`      | `Transaction` aggregate — the double-entry posting where `Σ DEBIT == Σ CREDIT` is enforced (`post()`). Reconciliation job is pending. | live (recon: M5) |
-| `idempotency/` | `Idempotency-Key` filter + `idempotency_keys` store: claim-first dedup guarding the money endpoints.                                  | live             |
-| `outbox/`      | Transactional outbox: event rows written in the posting transaction, polled and published.                                            | pending — M5     |
-| `common/`      | Cross-cutting + the shared domain kernel — see below.                                                                                 | live             |
+|    Package     |                                                            Responsibility                                                             |      Status       |
+|----------------|---------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| `account/`     | `Account` aggregate (balance cache, status, `version`), `debit`/`credit` enforcing ACTIVE + no-overdraw; CRUD endpoints.              | live              |
+| `topup/`       | Top-up use case — credits a user account against the `SYSTEM_FUNDING` counterpart, one balanced posting.                              | live              |
+| `transfer/`    | Transfer use case — orchestrates a two-leg `DEBIT from / CREDIT to` posting between two user accounts.                                | live              |
+| `ledger/`      | `Transaction` aggregate — the double-entry posting where `Σ DEBIT == Σ CREDIT` is enforced (`post()`). Reconciliation job is pending. | live (recon: M5)  |
+| `idempotency/` | `Idempotency-Key` filter + `idempotency_keys` store: claim-first dedup guarding the money endpoints.                                  | live              |
+| `outbox/`      | Transactional outbox: event rows written in the posting transaction (write side live); poller publishes them.                         | live (poller: M5) |
+| `common/`      | Cross-cutting + the shared domain kernel — see below.                                                                                 | live              |
 
 `LedgerEntry` is **not** in `ledger/`: it is an immutable shared fact in `common/domain`
 (shared kernel, ADR-0019), emitted by `Account.debit/credit` and collected by `Transaction`.
@@ -126,15 +127,15 @@ HTTP request
   → use-case service orchestrates, in one @Transactional:
         ledger/  posts the double-entry pair (Transaction.post enforces Σ DEBIT == Σ CREDIT)
         account/ updates the balance cache (+ version bump)
-        outbox/  appends the domain event row   (pending — M5)
+        outbox/  appends the domain event row   (poller: pending — M5)
   → single ACID commit  →  PostgreSQL
 ```
 
 The idempotency check runs in a servlet filter *before* the controller (claim-first via
 `INSERT … ON CONFLICT`, committed separately so concurrent requests can see it). The
 ledger entries + balance cache commit in one ACID transaction (ADR-0006). The outbox row
-_(pending — M5)_ will be written in that same transaction so there is no dual-write
-problem; a separate poller then publishes downstream.
+is written in that same transaction (ADR-0013) so there is no dual-write problem; a
+separate poller _(pending — M5)_ then publishes downstream.
 
 ## Cross-cutting concerns
 
@@ -166,6 +167,7 @@ The foundational decisions, with the full reasoning in `docs/adr/`:
 - [ADR-0010](docs/adr/0010-aggregate-boundary.md) — Account-per-aggregate (the locking boundary).
 - [ADR-0011](docs/adr/0011-concurrency-strategy.md) — Optimistic locking + bounded retry (pessimistic benchmarked).
 - [ADR-0012](docs/adr/0012-idempotency.md) — `Idempotency-Key` + claim-first in-flight handling.
+- [ADR-0013](docs/adr/0013-event-publishing.md) — Transactional outbox (same-tx event write; polling poller).
 - [ADR-0017](docs/adr/0017-observability.md) — Structured JSON log + MDC correlation id + Actuator.
 - [ADR-0018](docs/adr/0018-hexagonal-architecture.md) — Hexagonal (Ports & Adapters) inside each module.
 - [ADR-0019](docs/adr/0019-ddd-tactical-patterns.md) — DDD tactical; `LedgerEntry` as a shared fact.

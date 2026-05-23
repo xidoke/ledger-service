@@ -35,8 +35,9 @@ class LedgerArchitectureTest {
     // Feature packages are independent, with two allowed exceptions:
     //   1. anyone may depend on shared `common`;
     //   2. use-case features (transfer, topup) may depend on core aggregate features (account, ledger) — a use case
-    //      orchestrates aggregates via their public API (ADR-0019). The reverse (core → use case) stays forbidden,
-    //      and core features remain independent of each other (account ↮ ledger).
+    //      orchestrates aggregates via their public API (ADR-0019) — and may emit events into `outbox` in the same
+    //      transaction (ADR-0013). The reverse (core/outbox → use case) stays forbidden, and core features remain
+    //      independent of each other (account ↮ ledger).
     @ArchTest
     static final ArchRule featurePackagesAreIndependent = slices().matching("com.xidoke.ledger.(*)..")
             .namingSlices("$1")
@@ -45,8 +46,10 @@ class LedgerArchitectureTest {
             .ignoreDependency(alwaysTrue(), resideInAPackage("..common.."))
             .ignoreDependency(
                     resideInAnyPackage("com.xidoke.ledger.transfer..", "com.xidoke.ledger.topup.."),
-                    resideInAnyPackage("com.xidoke.ledger.account..", "com.xidoke.ledger.ledger.."))
-            .as("feature packages independent; use-case features may use core features + common (ADR-0019)");
+                    resideInAnyPackage(
+                            "com.xidoke.ledger.account..", "com.xidoke.ledger.ledger..", "com.xidoke.ledger.outbox.."))
+            .as("feature packages independent; use-case features may use core features, emit to outbox, + common "
+                    + "(ADR-0019, ADR-0013)");
 
     // common is shared infrastructure: it must never depend on a feature package.
     @ArchTest
