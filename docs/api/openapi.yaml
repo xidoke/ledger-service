@@ -1,0 +1,301 @@
+openapi: 3.1.0
+info:
+  title: Ledger Service API
+  description: "Double-entry e-wallet ledger — accounts, top-ups, transfers. Money\
+    \ endpoints are exactly-once via the Idempotency-Key header (ADR-0012) and return\
+    \ RFC 7807 problem+json on error."
+  version: "0.1"
+servers:
+- url: http://localhost
+  description: Generated server url
+paths:
+  /transfers:
+    post:
+      tags:
+      - transfer-controller
+      operationId: transfer
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Client-generated unique key making the operation exactly-once
+          under retries (ADR-0012).
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TransferResponse"
+        "400":
+          description: Missing/invalid Idempotency-Key or malformed request body
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "409":
+          description: "Concurrency conflict, or an in-flight duplicate of this Idempotency-Key"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "422":
+          description: "Business rule violation (e.g. insufficient funds), or Idempotency-Key\
+            \ reused with a different body"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /accounts:
+    post:
+      tags:
+      - account-controller
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+        "400":
+          description: Malformed or invalid request body
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /accounts/{id}/topups:
+    post:
+      tags:
+      - topup-controller
+      operationId: topup
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Client-generated unique key making the operation exactly-once
+          under retries (ADR-0012).
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopupRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TopupResponse"
+        "400":
+          description: Missing/invalid Idempotency-Key or malformed request body
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "409":
+          description: "Concurrency conflict, or an in-flight duplicate of this Idempotency-Key"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "422":
+          description: "Business rule violation (e.g. insufficient funds), or Idempotency-Key\
+            \ reused with a different body"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /hello:
+    get:
+      tags:
+      - hello-controller
+      operationId: hello
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /accounts/{id}:
+    get:
+      tags:
+      - account-controller
+      operationId: get
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+  /accounts/{id}/entries:
+    get:
+      tags:
+      - account-controller
+      operationId: entries
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LedgerEntryResponse"
+components:
+  schemas:
+    ProblemDetail:
+      type: object
+      description: RFC 7807 problem detail
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+    TransferRequest:
+      type: object
+      properties:
+        fromAccountId:
+          type: string
+          format: uuid
+        toAccountId:
+          type: string
+          format: uuid
+        amountMinorUnits:
+          type: integer
+          format: int64
+      required:
+      - fromAccountId
+      - toAccountId
+    TransferResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          format: uuid
+        fromAccountId:
+          type: string
+          format: uuid
+        fromBalanceMinorUnits:
+          type: integer
+          format: int64
+        toAccountId:
+          type: string
+          format: uuid
+        toBalanceMinorUnits:
+          type: integer
+          format: int64
+        currency:
+          type: string
+    CreateAccountRequest:
+      type: object
+      properties:
+        ownerRef:
+          type: string
+        currency:
+          type: string
+          maxLength: 3
+          minLength: 3
+      required:
+      - currency
+    AccountResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerRef:
+          type: string
+        currency:
+          type: string
+        status:
+          type: string
+        balanceMinorUnits:
+          type: integer
+          format: int64
+    TopupRequest:
+      type: object
+      properties:
+        amountMinorUnits:
+          type: integer
+          format: int64
+    TopupResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          format: uuid
+        accountId:
+          type: string
+          format: uuid
+        balanceMinorUnits:
+          type: integer
+          format: int64
+        currency:
+          type: string
+    LedgerEntryResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          format: uuid
+        direction:
+          type: string
+        amountMinorUnits:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        createdAt:
+          type: string
+          format: date-time

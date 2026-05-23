@@ -158,6 +158,7 @@ A layered skim path — start at the top, go deeper as the need arises:
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — where to make a change: module map, invariants, data flow.
 - [docs/adr/](docs/adr/) — Architecture Decision Records (MADR; see the catalog — Phase 1 ADRs land as decisions land).
+- [docs/api/](docs/api/) — OpenAPI 3 spec (`openapi.yaml`, SpringDoc); Swagger UI at `/swagger-ui.html` when running.
 - [docs/glossary.md](docs/glossary.md) — domain vocabulary: the ubiquitous language and canonical term names.
 - [docs/onboarding/](docs/onboarding/) — first-day setup beyond the Quickstart (scaffold; fills in Phase 1).
 - [CHANGELOG.md](CHANGELOG.md) — notable changes per version (Keep a Changelog).
