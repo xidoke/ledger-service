@@ -102,6 +102,10 @@ Every request carries a correlation id: send `X-Correlation-Id` (or one is gener
 it's echoed on the response and included in every log line. Console logs are **ECS JSON**
 (one object per line) — MDC fields like `correlationId` appear as top-level keys.
 
+Mutating `POST`s accept an optional `Idempotency-Key` header: a retry with the same key
+replays the first response instead of re-running the operation; reusing a key with a
+different body returns `422`.
+
 Errors are returned as **RFC 7807** `application/problem+json` (`type`, `title`, `status`,
 `detail`, `instance`); validation failures add a `fieldErrors` object.
 
