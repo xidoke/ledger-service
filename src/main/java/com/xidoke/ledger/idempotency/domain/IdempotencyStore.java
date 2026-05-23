@@ -1,5 +1,6 @@
 package com.xidoke.ledger.idempotency.domain;
 
+import java.time.Instant;
 import java.util.Optional;
 
 /**
@@ -21,4 +22,11 @@ public interface IdempotencyStore {
 
     /** Drop a still-PENDING claim so the operation can be retried (e.g. it failed or threw). */
     void release(String key);
+
+    /**
+     * Delete expired rows so abandoned keys stop blocking retries: PENDING rows older than {@code pendingCutoff} (a
+     * claim orphaned by a crash between {@link #claim} and {@link #complete}/{@link #release}) and COMPLETED rows older
+     * than {@code completedCutoff} (past the client retry window). Returns the number of rows removed.
+     */
+    int sweepExpired(Instant pendingCutoff, Instant completedCutoff);
 }
