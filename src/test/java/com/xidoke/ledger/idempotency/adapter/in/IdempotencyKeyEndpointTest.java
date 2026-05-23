@@ -19,9 +19,10 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * End-to-end idempotency filter against a real Postgres (Testcontainers): a top-up carrying an {@code Idempotency-Key}
- * is replayed (not re-executed) on retry; a key reused with a different body is rejected 422; and a request without the
- * header runs normally each time.
+ * End-to-end idempotency against a real Postgres (Testcontainers): the money endpoints require an
+ * {@code Idempotency-Key}; a same-key+body retry replays without re-executing; a same-key+different-body reuse is 422;
+ * and a key that is still PENDING (claimed by an in-flight request) is 409. The rigorous concurrent-threads race is
+ * LDG-50.
  */
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest
@@ -38,6 +39,7 @@ class IdempotencyKeyEndpointTest {
     private ObjectMapper objectMapper;
 
     private UUID createAccount() throws Exception {
+        // POST /accounts is not a money endpoint, so it does not require an Idempotency-Key.
         String json = mockMvc.perform(post("/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"ownerRef\":\"owner\",\"currency\":\"USD\"}"))
@@ -107,21 +109,39 @@ class IdempotencyKeyEndpointTest {
     }
 
     @Test
-    void withoutKeyEachRequestRunsNormally() throws Exception {
+    void missingKeyOnMoneyEndpointReturns400() throws Exception {
         UUID accountId = createAccount();
-        String body = "{\"amountMinorUnits\":1000}";
 
         mockMvc.perform(post("/accounts/{id}/topups", accountId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isCreated());
-        mockMvc.perform(post("/accounts/{id}/topups", accountId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isCreated());
+                        .content("{\"amountMinorUnits\":1000}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
 
-        // no idempotency key → both top-ups applied
-        assertThat(balanceOf(accountId)).isEqualTo(2000L);
+        // rejected before running: no balance change
+        assertThat(balanceOf(accountId)).isZero();
+    }
+
+    @Test
+    void inFlightPendingKeyReturns409() throws Exception {
+        UUID accountId = createAccount();
+        String key = UUID.randomUUID().toString();
+
+        // Simulate a request that has claimed the key but not yet finished (PENDING row, no response stored).
+        jdbc.sql("INSERT INTO idempotency_keys (key, request_hash, status) VALUES (:k, :h, 'PENDING')")
+                .param("k", key)
+                .param("h", "0".repeat(64))
+                .update();
+
+        mockMvc.perform(post("/accounts/{id}/topups", accountId)
+                        .header("Idempotency-Key", key)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"amountMinorUnits\":1000}"))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+
+        // the second request did not run while the first is in flight
+        assertThat(balanceOf(accountId)).isZero();
     }
 
     @Test
