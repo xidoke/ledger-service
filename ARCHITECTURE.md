@@ -32,31 +32,38 @@ domain. See ADR-0001 for the full rationale.
 
 ## Big picture
 
-The Phase 0 system context — who talks to the service and what it persists to.
-This is a plain flowchart stub; Phase 1 replaces it with a proper C4 Context
-diagram in `docs/architecture/`.
+The Phase-1 container view — the runnable pieces, the single write transaction,
+and the asynchronous drain. Per-subsystem deep dives (data model, posting flow,
+outbox flow, concurrency) live in [`docs/architecture/`](docs/architecture/).
 
 ```mermaid
-flowchart LR
-    user["App User<br/>(initiates top-ups, transfers, balance queries)"]
-    ops["Operations<br/>(monitors reconciliation — Phase 1)"]
+flowchart TB
+    user["App User<br/>(REST / JSON client)"]
 
     subgraph svc["Ledger Service · Spring Boot 3"]
-        api["HTTP API<br/>(REST / JSON)"]
-        domain["Ledger core<br/>(double-entry posting)"]
-        outbox["Outbox<br/>(Phase 1)"]
+        filter["IdempotencyFilter<br/>(claim-first dedup)"]
+        api["Controllers<br/>account · topup · transfer"]
+        uc["Use-case services<br/>(@Transactional posting + OptimisticRetry)"]
+        poller["OutboxPoller<br/>(@Scheduled)"]
+        consumer["Idempotent consumer<br/>(log-only @ Nấc 0)"]
+        recon["ReconciliationJob<br/>(@Scheduled, alert-only)"]
     end
 
-    db[("PostgreSQL 17<br/>accounts · ledger_entries · outbox")]
-    consumer["Downstream consumer<br/>(Phase 2 — via outbox)"]
+    db[("PostgreSQL 17<br/>accounts · transactions · ledger_entries<br/>idempotency_keys · outbox · processed_events")]
+    broker["Downstream / broker<br/>(Phase 2)"]
 
-    user -->|HTTPS/JSON| api
-    ops -.->|admin/health| api
-    api --> domain
-    domain -->|JDBC, single ACID tx| db
-    domain --> outbox
-    outbox -.->|polled & published| consumer
+    user -->|"HTTPS/JSON + Idempotency-Key"| filter
+    filter --> api --> uc
+    uc -->|"one ACID tx: entries + balance cache + outbox row"| db
+    poller -->|"poll PENDING (FOR UPDATE SKIP LOCKED)"| db
+    poller --> consumer
+    consumer -->|"dedup via processed_events"| db
+    consumer -.->|"Phase 2: publish"| broker
+    recon -->|"drift check: cache vs Σ entries"| db
 ```
+
+> **C4 levels**: this is the *Container* view. Deeper *Component*/flow diagrams
+> (posting, outbox, concurrency) are in [`docs/architecture/`](docs/architecture/).
 
 ## Module map
 
