@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/xidoke/ledger-service/graph/badge.svg)](https://codecov.io/gh/xidoke/ledger-service)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Status:** Phase 1 — core ledger in progress. Account, top-up, transfer, and idempotency are live (double-entry posting, balance cache, retry-safe money endpoints); optimistic-lock concurrency is live, transactional outbox + reconciliation are next.
+**Status:** Phase 1 — core ledger in progress. Account, top-up, transfer, and idempotency are live (double-entry posting, balance cache, retry-safe money endpoints); optimistic-lock concurrency, the transactional outbox, and the reconciliation drift job are live; the v0.1 release is next.
 
 ## What it does
 
@@ -147,7 +147,7 @@ Architecture, decision records, and onboarding docs live in `ARCHITECTURE.md` an
 The project advances through deliberate phases, each with explicit exit criteria:
 
 - **Phase 0 (done, ~4 weeks)** — Foundations & skeleton: project files, code-quality stack (Spotless, ArchUnit, JaCoCo, SonarCloud), CI on GitHub Actions, Docker Compose + Flyway, structured logging + correlation ID, Actuator health groups.
-- **Phase 1 (current, ~8 weeks)** — Core ledger (level 0–1): double-entry entries, idempotency keys, optimistic locking with retry, transactional outbox, reconciliation job. Release **v0.1** deployed. _(double-entry posting + idempotency + concurrency done; outbox + reconciliation next.)_
+- **Phase 1 (current, ~8 weeks)** — Core ledger (level 0–1): double-entry entries, idempotency keys, optimistic locking with retry, transactional outbox, reconciliation job. Release **v0.1** deployed. _(double-entry, idempotency, concurrency, outbox, and reconciliation done; v0.1 release next.)_
 - **Phase 2+** — Two-service split via outbox boundary, saga for cross-service flows, Kafka, observability stack, scale work.
 
 Architecture decision records live in [docs/adr/](docs/adr/) (see the catalog there; Phase 1 ADRs land as decisions land); the country-map overview is in [ARCHITECTURE.md](ARCHITECTURE.md). Detailed phase plans are tracked separately and surface under `docs/` as they solidify.
