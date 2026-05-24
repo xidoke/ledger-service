@@ -1,0 +1,18 @@
+# Production profile (SPRING_PROFILES_ACTIVE=prod) — used on the Render deploy.
+# The datasource is supplied entirely by environment variables and is never committed:
+#   SPRING_DATASOURCE_URL  (jdbc:postgresql://…)  ·  SPRING_DATASOURCE_USERNAME  ·  SPRING_DATASOURCE_PASSWORD
+# Flyway runs the V1–V9 migrations against that database on startup (default-on); ddl-auto stays none.
+
+server:
+  # Render injects PORT (e.g. 10000) and routes traffic to it; bind that, falling back to 8080 for a local prod run.
+  port: ${PORT:8080}
+
+spring:
+  docker:
+    compose:
+      # No compose.yaml ships in the image, but be explicit: never try to start Docker Compose in production.
+      enabled: false
+  datasource:
+    hikari:
+      # Modest pool for a 512 MB instance + a free-tier Postgres connection budget.
+      maximum-pool-size: 5

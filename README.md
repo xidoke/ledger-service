@@ -110,6 +110,25 @@ while the first is still in flight → `409`.
 Errors are returned as **RFC 7807** `application/problem+json` (`type`, `title`, `status`,
 `detail`, `instance`); validation failures add a `fieldErrors` object.
 
+## Deployment
+
+**Live demo**: ‹pending first deploy — URL goes here›
+
+v0.1 deploys to **Render** (Docker web service, free instance) against a managed PostgreSQL,
+using the `prod` profile. The multi-stage [`Dockerfile`](Dockerfile) builds a layered Spring
+Boot image (non-root, container-aware JVM); [`application-prod.yml`](src/main/resources/application-prod.yml)
+binds Render's `PORT` and keeps the Hikari pool small for the 512 MB instance. Configure on Render:
+
+|                  Setting                   |                              Value                              |
+|--------------------------------------------|-----------------------------------------------------------------|
+| Runtime                                    | Docker · Health Check Path `/actuator/health`                   |
+| `SPRING_PROFILES_ACTIVE`                   | `prod`                                                          |
+| `SPRING_DATASOURCE_URL`                    | `jdbc:postgresql://<host>/<db>` (from the managed Postgres)     |
+| `SPRING_DATASOURCE_USERNAME` / `_PASSWORD` | from the managed Postgres (set in Render env — never committed) |
+
+Flyway runs the migrations on startup. The free web instance spins down after ~15 min idle, so
+the first request after a pause takes ~1 minute to cold-start.
+
 ## Repository layout
 
 ```
