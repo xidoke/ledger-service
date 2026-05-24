@@ -17,6 +17,25 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      # Detect whether anything that affects the build/tests changed. Docs- or
+      # config-only PRs (*.md, .gitignore, …) skip the heavy `verify` below but
+      # still run Spotless, and the job — the required "Build, test & lint"
+      # status check — always reports, so merges never hang on a skipped run.
+      - name: Detect code changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            code:
+              - 'src/**'
+              - 'pom.xml'
+              - 'mvnw'
+              - 'mvnw.cmd'
+              - '.mvn/**'
+              - 'Dockerfile'
+              - 'compose*.yaml'
+              - '.github/workflows/**'
+
       - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:
@@ -25,18 +44,23 @@ jobs:
           cache: maven
 
       - name: Lint (Spotless)
+        # Always run — fast, and it formats Markdown too, so docs PRs are still checked.
         run: ./mvnw -B spotless:check --no-transfer-progress
 
       - name: Build & test
-        # verify = compile + Surefire tests; the skeleton test is a Testcontainers
-        # @SpringBootTest, so Docker (pre-installed on ubuntu-latest) is required.
+        # verify = compile + Surefire tests; the tests are Testcontainers
+        # @SpringBootTests, so Docker (pre-installed on ubuntu-latest) is required.
         # Spotless already ran above, so skip its validate-phase re-check here.
+        # Skipped on docs/config-only changes — nothing compiled changed.
+        if: steps.changes.outputs.code == 'true'
         run: ./mvnw -B verify -Dspotless.check.skip=true --no-transfer-progress
         env:
           TESTCONTAINERS_RYUK_DISABLED: "true"
 
       - name: Upload coverage report
-        if: always()
+        # Only when tests ran (otherwise there is no jacoco report and the
+        # if-no-files-found:error below would fail the job).
+        if: ${{ always() && steps.changes.outputs.code == 'true' }}
         uses: actions/upload-artifact@v7
         with:
           name: jacoco-report
@@ -44,7 +68,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload coverage to Codecov
-        if: always()
+        if: ${{ always() && steps.changes.outputs.code == 'true' }}
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
