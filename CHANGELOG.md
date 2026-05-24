@@ -12,6 +12,26 @@ section to the new version + date and start a fresh `[Unreleased]`.
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.1.0] - 2026-05-24
+
+Phase 1 — a working double-entry e-wallet ledger, live on Render. Accounts,
+top-ups, and transfers post balanced entries under optimistic-lock retry and
+mandatory idempotency; a transactional outbox + idempotent consumer carry domain
+events without a dual-write, and a daily reconciliation job guards the balance
+cache. OpenAPI spec + architecture deep-dives published.
+
+### Added
+
 - Core domain model (Phase 1): `Account` aggregate (balance cache, status, `debit`/`credit` enforcing ACTIVE + no-overdraw), `Transaction` aggregate (double-entry `Σ debit == Σ credit` posting), immutable `LedgerEntry` fact, and a shared domain kernel (`Money`, `AccountId`, `TransactionId`, `Direction`) under `common/domain`. ADR-0010 (Account-per-aggregate).
 - Flyway migrations V2–V4 for the domain schema: `accounts` (UUID PK, BIGINT `balance`, optimistic-lock `version`, `updated_at` trigger), `transactions`, and append-only `ledger_entries` (DB trigger rejecting UPDATE/DELETE, `amount > 0` check, `(account_id, created_at)` index). Money columns are BIGINT minor units (ADR-0007); enum-like columns use VARCHAR + CHECK.
 - `MoneyFormatter` — currency-aware display formatting (minor → major via ISO 4217 fraction digits), centralizing the `/100` conversion so it never scatters (ADR-0007).
@@ -61,5 +81,6 @@ Phase 0 — foundations & skeleton (no domain endpoints yet).
 - RFC 7807 ProblemDetail error handling.
 - Docs: README, ARCHITECTURE.md, ADRs 0001–0007, glossary, CONTRIBUTING, MIT LICENSE; Lefthook pre-commit + commit-msg hooks.
 
-[Unreleased]: https://github.com/xidoke/ledger-service/compare/v0.0.0...HEAD
+[Unreleased]: https://github.com/xidoke/ledger-service/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/xidoke/ledger-service/compare/v0.0.0...v0.1.0
 [0.0.0]: https://github.com/xidoke/ledger-service/releases/tag/v0.0.0

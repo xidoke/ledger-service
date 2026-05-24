@@ -112,7 +112,7 @@ Errors are returned as **RFC 7807** `application/problem+json` (`type`, `title`,
 
 ## Deployment
 
-**Live demo**: ‹pending first deploy — URL goes here›
+**Live demo**: <https://ledger-service-bjzr.onrender.com> · health [`/actuator/health`](https://ledger-service-bjzr.onrender.com/actuator/health) · API docs [`/swagger-ui.html`](https://ledger-service-bjzr.onrender.com/swagger-ui.html)
 
 v0.1 deploys to **Render** (Docker web service, free instance) against a managed PostgreSQL,
 using the `prod` profile. The multi-stage [`Dockerfile`](Dockerfile) builds a layered Spring
