@@ -63,6 +63,10 @@ replay_pid*
 ### VS Code ###
 .vscode/
 
+### Local tooling ###
+# CodeGraph local symbol index (rebuilt per machine).
+.codegraph/
+
 ### Spring Boot — local config & secrets ###
 secrets.yml
 application-local.properties
