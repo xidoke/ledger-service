@@ -43,7 +43,7 @@ USER appuser
 EXPOSE 8080
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
+  CMD curl -f "http://localhost:${PORT:-8080}/actuator/health" || exit 1
 
 # `jarmode=tools extract` produces a launcher jar (application.jar) that
 # references the extracted dependencies/ layer — run it with -jar.
