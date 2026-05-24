@@ -181,7 +181,7 @@ A layered skim path — start at the top, go deeper as the need arises:
 - [docs/api/](docs/api/) — OpenAPI 3 spec (`openapi.yaml`, SpringDoc); Swagger UI at `/swagger-ui.html` when running.
 - [docs/glossary.md](docs/glossary.md) — domain vocabulary: the ubiquitous language and canonical term names.
 - [docs/onboarding/](docs/onboarding/) — first-day setup beyond the Quickstart (scaffold; fills in Phase 1).
-- [docs/blog/](docs/blog/) — long-form write-ups on the engineering behind the ledger (e.g. the concurrency race a stress test found).
+- [docs/blog/](docs/blog/) — long-form write-ups on the engineering behind the ledger. Blog 1: [The race condition a stress test found in my double-entry ledger — and how I fixed it](https://dev.to/xidoke/the-race-condition-a-stress-test-found-in-my-double-entry-ledger-and-how-i-fixed-it-b5o).
 - [CHANGELOG.md](CHANGELOG.md) — notable changes per version (Keep a Changelog).
 - [AGENTS.md](AGENTS.md) — tool-neutral AI-agent instructions (stack, commands, conventions, DO/DON'T).
 
