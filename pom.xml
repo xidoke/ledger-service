@@ -176,6 +176,9 @@
 						</includes>
 						<excludes>
 							<exclude>target/**</exclude>
+							<!-- Blog posts carry platform-specific YAML front matter (dev.to) that
+							     flexmark mangles into a setext heading; keep them verbatim. -->
+							<exclude>docs/blog/**</exclude>
 						</excludes>
 						<flexmark/>
 						<endWithNewline/>
