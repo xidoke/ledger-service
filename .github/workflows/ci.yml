@@ -22,7 +22,7 @@ jobs:
       # still run Spotless, and the job — the required "Build, test & lint"
       # status check — always reports, so merges never hang on a skipped run.
       - name: Detect code changes
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: changes
         with:
           filters: |
