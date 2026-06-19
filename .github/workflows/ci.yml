@@ -15,7 +15,7 @@ jobs:
     name: Build, test & lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Detect whether anything that affects the build/tests changed. Docs- or
       # config-only PRs (*.md, .gitignore, …) skip the heavy `verify` below but
